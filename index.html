@@ -20,17 +20,28 @@
 
         h1 {
             font-size: 3rem;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-shadow: 0 0 15px #ff007f;
             text-align: center;
+        }
+
+        .version-badge {
+            background: #ff007f;
+            color: white;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: inline-block;
         }
 
         .game-card {
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
+            padding: 35px;
+            max-width: 520px;
             width: 85%;
             text-align: center;
             backdrop-filter: blur(10px);
@@ -38,27 +49,53 @@
         }
 
         .preview-img {
-            width: 220px;
+            width: 200px;
             height: auto;
             border-radius: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         }
 
         p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             line-height: 1.5;
             color: #d1d1d1;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.08);
+            border-left: 4px solid #ff007f;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            color: #e0e0e0;
+            margin-bottom: 25px;
+        }
+
+        .dev-note {
+            font-style: italic;
+            color: #4caf50;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .warning-text {
+            font-size: 0.85rem;
+            color: #ffbd59;
+            margin-top: 15px;
+            line-height: 1.4;
         }
 
         .download-btn {
             display: inline-block;
             background: linear-gradient(45deg, #ff007f, #7928ca);
             color: white;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            padding: 16px 40px;
+            padding: 16px 35px;
             border-radius: 50px;
             text-decoration: none;
             transition: transform 0.2s, box-shadow 0.2s;
@@ -74,13 +111,29 @@
 <body>
 
     <h1>МАМА ПТИЦА: КЛИКЕР</h1>
+    <div class="version-badge">Версия 1.1 уже готова!</div>
 
     <div class="game-card">
         <img src="level8.png" alt="Превью игры" class="preview-img">
         <p>Кликай, набивай очки, крути казино и собирай уникальные коллекции персонажей!</p>
         
-        <!-- ВСТАВЬ СВОЮ ССЫЛКУ С ОБЛАКА ВМЕСТО ВМЕСТО ЗНАКОВ ВОПРОСА НИЖЕ -->
-        <a href="https://drive.google.com/file/d/10_Az0tdnfCpGiD0v5i0LqL586kM4JVWm/view?usp=drive_link" class="download-btn" target="_blank">СКАЧАТЬ ИГРУ (ZIP)</a>
+        <div class="instructions">
+            📌 <b>Как запустить игру:</b><br>
+            1. Скачайте ZIP-файл по ссылке ниже.<br>
+            2. Распакуйте архив на рабочий стол или в любую папку.<br>
+            3. Найдите внутри файл с расширением <b>.exe</b> и откройте его!
+        </div>
+
+        <!-- ВСТАВЬ СВОЮ ССЫЛКУ С ГУГЛ ДИСКА ВМЕСТО ВСТАВЬ_ССЫЛКУ_НА_ДИСК_СЮДА -->
+        <a href="https://drive.google.com/file/d/1H6mkorLHgd5ssoUDrVqvOsn3SvtKYxxp/view?usp=sharing" class="download-btn" target="_blank">СКАЧАТЬ ИГРУ v1.1 (ZIP)</a>
+
+        <div class="dev-note">
+            🛠️ Игра будет дорабатываться! Ждите новые обновления и персонажей.
+        </div>
+
+        <div class="warning-text">
+            ⚠️ Если антивирус или браузер ругается при скачивании — не бойтесь! Это ложное срабатывание из-за отсутствия платной цифровой подписи. Нажмите «Разрешить» или «Сохранить всё равно».
+        </div>
     </div>
 
 </body>
