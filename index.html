@@ -52,7 +52,6 @@
             text-align: center;
         }
 
-        /* Навигация и верхняя панель */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -90,7 +89,6 @@
             margin-bottom: 10px;
         }
 
-        /* Кликер экран */
         .click-target {
             width: 250px;
             height: 250px;
@@ -107,7 +105,6 @@
             transform: scale(0.95);
         }
 
-        /* Экраны меню */
         .screen {
             display: none;
         }
@@ -127,7 +124,6 @@
             margin-bottom: 15px;
         }
 
-        /* Прокачка */
         .upgrade-card {
             background: rgba(255,255,255,0.08);
             border-radius: 15px;
@@ -162,7 +158,6 @@
             cursor: not-allowed;
         }
 
-        /* Инвентарь */
         .inventory-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -185,7 +180,6 @@
             border-radius: 8px;
         }
 
-        /* Ссылка на скачивание ПК-версии */
         .download-section {
             margin-top: 25px;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -258,11 +252,12 @@
             <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
         </div>
 
-        <!-- === 5. СЕКРЕТКА (LEVEL 21) === -->
+        <!-- === 5. ДОНАТ (LEVEL 21) === -->
         <div id="secret-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
-            <h2>Секретный Уровень</h2>
-            <img src="level22.png" style="width: 80%; border-radius: 15px; margin-top: 10px;" alt="Secret">
+            <h2>Донат</h2>
+            <div class="sub-text">Поддержи разработчиков и Маму Птицу!</div>
+            <img src="level22.png" style="width: 80%; border-radius: 15px; margin-top: 10px;" alt="Donate">
         </div>
 
         <!-- === СКАЧИВАНИЕ ДЛЯ ПК === -->
@@ -275,7 +270,6 @@
     </div>
 
     <script>
-        // Данные игры
         let clicks = 0;
         let clickPower = 1;
         let upgradeStep = 0;
@@ -304,7 +298,6 @@
             18: "Капитан лицея", 19: "Потужно", 20: "Золотая Панкова"
         };
 
-        // Клик по маме птице
         function handleClick() {
             clicks += clickPower;
             updateUI();
@@ -313,7 +306,6 @@
         function updateUI() {
             document.getElementById('score-display').innerText = `Кликов: ${clicks}`;
             
-            // Смена картинки главного уровня
             let currentImg = 'level1.png';
             for (let l of levels) {
                 if (clicks >= l.threshold) currentImg = l.img;
@@ -321,7 +313,6 @@
             document.getElementById('click-target').style.backgroundImage = `url('${currentImg}')`;
         }
 
-        // Переключение экранов
         function openScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -330,7 +321,6 @@
             if (screenId === 'inventory-screen') renderInventory();
         }
 
-        // Отрисовка прокачки
         function renderUpgrades() {
             document.getElementById('upgrade-status').innerText = `Текущая сила клика: +${clickPower}`;
             const container = document.getElementById('upgrade-container');
@@ -364,7 +354,6 @@
             }
         }
 
-        // Казино
         function playCasino() {
             if (clicks < 10) {
                 alert("Не хватает кликов! Нужно минимум 10.");
@@ -383,7 +372,6 @@
             document.getElementById('casino-result').innerText = `Выпал: ${charNames[rolled] || 'Персонаж ' + rolled}!`;
         }
 
-        // Отрисовка инвентаря
         function renderInventory() {
             const grid = document.getElementById('inventory-grid');
             grid.innerHTML = '';
