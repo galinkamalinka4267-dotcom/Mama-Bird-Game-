@@ -229,7 +229,7 @@
             <div class="sub-text">Испытай удачу за 10 кликов!</div>
             
             <div id="casino-display" style="width:180px; height:180px; margin: 15px auto; background-size: cover; background-position: center; border-radius: 15px; background-image: url('level10.png');"></div>
-            <div id="casino-result" style="font-weight: bold; margin: 10px 0; color: #4caf50;"></div>
+            <div id="casino-result" style="font-weight: bold; margin: 10px 0; min-height: 24px;"></div>
 
             <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
         </div>
@@ -329,8 +329,11 @@
         }
 
         function playCasino() {
+            const resultDiv = document.getElementById('casino-result');
+
             if (clicks < 10) {
-                alert("Не хватает кликов! Нужно минимум 10.");
+                resultDiv.style.color = "#f44336";
+                resultDiv.innerText = "Не хватает кликов! Нужно минимум 10.";
                 return;
             }
 
@@ -343,7 +346,8 @@
             inventory[rolled] = (inventory[rolled] || 0) + 1;
 
             document.getElementById('casino-display').style.backgroundImage = `url('level${rolled}.png')`;
-            document.getElementById('casino-result').innerText = `Выпал: ${charNames[rolled] || 'Персонаж ' + rolled}!`;
+            resultDiv.style.color = "#4caf50";
+            resultDiv.innerText = `Выпал: ${charNames[rolled] || 'Персонаж ' + rolled}!`;
         }
 
         function renderInventory() {
