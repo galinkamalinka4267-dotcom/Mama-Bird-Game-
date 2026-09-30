@@ -180,29 +180,18 @@
             border-radius: 8px;
         }
 
-        .download-section {
-            margin-top: 25px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 15px;
-        }
-
-        .download-btn {
-            display: inline-block;
-            background: linear-gradient(45deg, #ff007f, #7928ca);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            padding: 12px 25px;
-            border-radius: 30px;
-            text-decoration: none;
-            box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4);
+        .media-box {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 15px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <h1>МАМА ПТИЦА: КЛИКЕР</h1>
-    <div class="version-badge">Версия 1.1 (Онлайн & ПК)</div>
+    <div class="version-badge">Версия 1.2</div>
 
     <div class="game-container">
         
@@ -222,7 +211,7 @@
             <div class="sub-text">Тапай по маме птице, чтобы набивать очки!</div>
         </div>
 
-        <!-- === 2. МЕНЮ УЛУЧШЕНИЙ (LEVEL 25) === -->
+        <!-- === 2. МЕНЮ УЛУЧШЕНИЙ === -->
         <div id="upgrade-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Улучшения клика</h2>
@@ -231,7 +220,7 @@
             <div id="upgrade-container"></div>
         </div>
 
-        <!-- === 3. МЕНЮ ИНВЕНТАРЯ (LEVEL 23) === -->
+        <!-- === 3. МЕНЮ ИНВЕНТАРЯ === -->
         <div id="inventory-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Инвентарь персонажей</h2>
@@ -240,7 +229,7 @@
             </div>
         </div>
 
-        <!-- === 4. КАЗИНО (LEVEL 9) === -->
+        <!-- === 4. КАЗИНО === -->
         <div id="casino-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Бурмалда-Казино</h2>
@@ -252,19 +241,22 @@
             <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
         </div>
 
-        <!-- === 5. ДОНАТ (LEVEL 21) === -->
+        <!-- === 5. ДОНАТ (ВМЕСТО СЕКРЕТНОГО УРОВНЯ) === -->
         <div id="secret-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Донат</h2>
-            <div class="sub-text">Поддержи разработчиков и Маму Птицу!</div>
-            <img src="level22.png" style="width: 80%; border-radius: 15px; margin-top: 10px;" alt="Donate">
-        </div>
-
-        <!-- === СКАЧИВАНИЕ ДЛЯ ПК === -->
-        <div class="download-section">
-            <div class="sub-text">Хочешь играть в `.exe` на ПК?</div>
-            <!-- ВСТАВЬ СВОЮ ССЫЛКУ С ГУГЛ ДИСКА ВМЕСТО ВСТАВЬ_ССЫЛКУ_НА_ДИСК_СЮДА -->
-            <a href="ВСТАВЬ_ССЫЛКУ_НА_ДИСК_СЮДА" class="download-btn" target="_blank">Скачать ПК версию (ZIP)</a>
+            
+            <!-- Картинка доната -->
+            <img src="level22.png" class="media-box" alt="Donate">
+            
+            <!-- Аудио с автовоспроизведением и кнопками управления -->
+            <div style="margin-top: 15px;">
+                <audio id="donate-audio" controls style="width: 100%; max-width: 300px;">
+                    <source src="level22.mp3" type="audio/mpeg">
+                    <source src="level22.wav" type="audio/wav">
+                    Ваш браузер не поддерживает аудио.
+                </audio>
+            </div>
         </div>
 
     </div>
@@ -316,6 +308,17 @@
         function openScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
+
+            // Управление звуком в донате
+            const donateAudio = document.getElementById('donate-audio');
+            if (screenId === 'secret-screen') {
+                if (donateAudio) donateAudio.play().catch(() => {});
+            } else {
+                if (donateAudio) {
+                    donateAudio.pause();
+                    donateAudio.currentTime = 0;
+                }
+            }
 
             if (screenId === 'upgrade-screen') renderUpgrades();
             if (screenId === 'inventory-screen') renderInventory();
