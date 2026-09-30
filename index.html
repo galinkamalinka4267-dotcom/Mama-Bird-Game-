@@ -179,13 +179,6 @@
             height: 60px;
             border-radius: 8px;
         }
-
-        .media-box {
-            width: 100%;
-            max-width: 320px;
-            border-radius: 15px;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -241,22 +234,11 @@
             <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
         </div>
 
-        <!-- === 5. ДОНАТ (ВМЕСТО СЕКРЕТНОГО УРОВНЯ) === -->
+        <!-- === 5. ДОНАТ === -->
         <div id="secret-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Донат</h2>
-            
-            <!-- Картинка доната -->
-            <img src="level22.png" class="media-box" alt="Donate">
-            
-            <!-- Аудио с автовоспроизведением и кнопками управления -->
-            <div style="margin-top: 15px;">
-                <audio id="donate-audio" controls style="width: 100%; max-width: 300px;">
-                    <source src="level22.mp3" type="audio/mpeg">
-                    <source src="level22.wav" type="audio/wav">
-                    Ваш браузер не поддерживает аудио.
-                </audio>
-            </div>
+            <img src="level22.png" style="width: 80%; border-radius: 15px; margin-top: 10px;" alt="Donate">
         </div>
 
     </div>
@@ -308,17 +290,6 @@
         function openScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-
-            // Управление звуком в донате
-            const donateAudio = document.getElementById('donate-audio');
-            if (screenId === 'secret-screen') {
-                if (donateAudio) donateAudio.play().catch(() => {});
-            } else {
-                if (donateAudio) {
-                    donateAudio.pause();
-                    donateAudio.currentTime = 0;
-                }
-            }
 
             if (screenId === 'upgrade-screen') renderUpgrades();
             if (screenId === 'inventory-screen') renderInventory();
