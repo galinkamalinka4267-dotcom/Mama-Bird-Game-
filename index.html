@@ -239,7 +239,7 @@
             border-radius: 2px;
         }
 
-        /* Просто жёлтый квадрат без иконки */
+        /* Жёлтый квадрат портала */
         .portal-block {
             width: 100%;
             height: 100%;
@@ -333,6 +333,61 @@
             border-radius: 8px;
             cursor: pointer;
         }
+
+        /* === СТИЛИ СВОРАЧИВАЕМЫХ ВОПРОСОВ (FAQ) === */
+        .faq-container {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .faq-header {
+            padding: 10px 12px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #ffd700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .faq-header:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .faq-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+            font-size: 0.85rem;
+            color: #ddd;
+            line-height: 1.4;
+            padding: 0 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .faq-item.open .faq-body {
+            max-height: 200px;
+            padding: 10px 12px;
+        }
+
+        .faq-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body>
@@ -372,6 +427,30 @@
                     </div>
                 </div>
             </div>
+
+            <!-- === СВОРАЧИВАЕМЫЙ БЛОК ВОПРОСОВ (FAQ) === -->
+            <div class="faq-container">
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-header">
+                        О Версии 1.3.
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-body">
+                        в версии 1.3 были проведены изменения общего баланса кликов, а также добавлено новое измерение! Положите в сетку крафта по краям 8 Панков и вложите в середину жёлтого директора - проводника в измерение. Вам откроется портал! Исследуйте новый мир с удовольствием!
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-header">
+                        Про анонимность.
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-body">
+                        Наша игра придерживается максимальной анонимности. Именно из-за этого при выходе из сайта теряются очки, а все ники в чате временны. Ни байта информации с сервера не попадёт в чужие руки!
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- === 2. МЕНЮ УЛУЧШЕНИЙ === -->
@@ -694,6 +773,11 @@
             return String(string).replace(/[&<>"']/g, function (s) {
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
             });
+        }
+
+        // === ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ FAQ ===
+        function toggleFaq(element) {
+            element.classList.toggle('open');
         }
     </script>
 </body>
