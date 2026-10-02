@@ -479,7 +479,7 @@
 
         const charNames = {
             5: "Панкова",
-            11: "Прокопенко", 12: "Большая", 13: "Панкова", 14: "Директор",
+            11: "Прокопенко", 12: "Большая", 13: "Мега пальчики", 14: "Директор",
             15: "Мамка птица", 16: "Голом лицея", 17: "Мама Птица",
             18: "Капитан лицея", 19: "Потужно", 20: "Золотая Панкова",
             26: "potuzhno"
@@ -551,7 +551,7 @@
             clicks -= 10;
             updateUI();
 
-            const outcomes = [5, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 26];
+            const outcomes = [5, 11, 12, 14, 15, 16, 17, 18, 19, 20, 26];
             const rolled = outcomes[Math.floor(Math.random() * outcomes.length)];
 
             inventory[rolled] = (inventory[rolled] || 0) + 1;
@@ -631,7 +631,8 @@
 
         function isSecretRecipeActive() {
             const borderIndices = [0, 1, 2, 3, 5, 6, 7, 8];
-            const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '5');
+            // Поддерживаем оба ID для Панковой (5 или 13), если у игрока осталась старая
+            const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '5' || String(gridState[idx]) === '13');
             const centerCheck = String(gridState[4]) === '26';
             return borderCheck && centerCheck;
         }
