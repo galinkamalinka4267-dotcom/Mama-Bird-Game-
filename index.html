@@ -178,7 +178,7 @@
             border-radius: 10px;
             padding: 8px;
             font-size: 0.8rem;
-            cursor: grab;
+            cursor: pointer;
         }
 
         .inv-item img {
@@ -196,10 +196,10 @@
         }
 
         .craft-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #ffcc00;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .craft-grid-container {
@@ -342,7 +342,7 @@
 <body>
 
     <h1>МАМА ПТИЦА: КЛИКЕР</h1>
-    <div class="version-badge">Версия 1.3</div>
+    <div class="version-badge">Версия 1.3: новое измерение!</div>
 
     <div class="game-container">
         
@@ -397,8 +397,8 @@
 
             <!-- === СЕТКА ИНВЕНТАРЯ 3х3 === -->
             <div class="craft-section">
-                <div class="craft-title">Сетка алтаря (3x3)</div>
-                <div class="sub-text" style="font-size:0.8rem; margin-bottom:8px;">Перетягивайте или нажимайте на предмет, чтобы вставить его в сетку</div>
+                <div class="craft-title">Крафт</div>
+                <div class="sub-text" style="font-size:0.8rem; margin-bottom:8px;">нажимайте на предмет, чтобы вставить его в сетку</div>
                 
                 <div class="craft-grid-container">
                     <div class="craft-grid" id="craft-grid">
@@ -478,7 +478,7 @@
         ];
 
         const charNames = {
-            5: "Левел 5",
+            5: "Панкова",
             11: "Прокопенко", 12: "Большая", 13: "Панкова", 14: "Директор",
             15: "Мамка птица", 16: "Голом лицея", 17: "Мама Птица",
             18: "Капитан лицея", 19: "Потужно", 20: "Золотая Панкова",
@@ -619,7 +619,6 @@
         function removeGridItem(index) {
             const item = gridState[index];
             if (item !== null) {
-                // Если кликнули по секретному жёлтому порталу — переход на yellow.html
                 if (index === 4 && isSecretRecipeActive()) {
                     window.location.href = 'yellow.html';
                     return;
@@ -631,7 +630,6 @@
         }
 
         function isSecretRecipeActive() {
-            // Края (0,1,2, 3,5, 6,7,8) должны быть level5, а центр (4) — level26
             const borderIndices = [0, 1, 2, 3, 5, 6, 7, 8];
             const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '5');
             const centerCheck = String(gridState[4]) === '26';
@@ -646,7 +644,6 @@
                 cell.innerHTML = '';
                 
                 if (idx === 4 && recipeUnlocked) {
-                    // Отрисовка жёлтого секретного блока по центру
                     const portal = document.createElement('div');
                     portal.className = 'portal-block';
                     portal.innerText = '🟡';
