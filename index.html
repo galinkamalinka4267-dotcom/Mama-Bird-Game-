@@ -239,24 +239,20 @@
             border-radius: 2px;
         }
 
-        /* Жёлтый секретный блок в центре */
+        /* Просто жёлтый квадрат без иконки */
         .portal-block {
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, #ffe600, #ff8800);
+            background: #ffea00;
             border: 2px solid #ffffff;
-            box-shadow: 0 0 12px #ffcc00;
+            box-shadow: 0 0 12px #ffea00;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
             animation: pulsePortal 1.2s infinite alternate;
         }
 
         @keyframes pulsePortal {
-            0% { transform: scale(0.92); box-shadow: 0 0 8px #ffcc00; }
-            100% { transform: scale(1.05); box-shadow: 0 0 18px #ffff00; }
+            0% { transform: scale(0.93); box-shadow: 0 0 8px #ffea00; }
+            100% { transform: scale(1.03); box-shadow: 0 0 18px #ffff00; }
         }
 
         /* === СТИЛИ ОНЛАЙН-ЧАТА === */
@@ -272,7 +268,7 @@
         .chat-title {
             font-size: 1.1rem;
             font-weight: bold;
-            color: #00ffff;
+            color: #00d8ff;
             margin-bottom: 8px;
             text-align: center;
         }
@@ -363,7 +359,7 @@
 
             <!-- === ОНЛАЙН-ЧАТ ПОД КЛИКЕРОМ === -->
             <div class="chat-container">
-                <div class="chat-title">💬 Живой чат игроков</div>
+                <div class="chat-title">Чат игроков</div>
                 <div class="chat-messages" id="chat-messages">
                     <div style="color: #888; text-align: center;">Загрузка сообщений...</div>
                 </div>
@@ -631,7 +627,6 @@
 
         function isSecretRecipeActive() {
             const borderIndices = [0, 1, 2, 3, 5, 6, 7, 8];
-            // Поддерживаем оба ID для Панковой (5 или 13), если у игрока осталась старая
             const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '5' || String(gridState[idx]) === '13');
             const centerCheck = String(gridState[4]) === '26';
             return borderCheck && centerCheck;
@@ -647,7 +642,6 @@
                 if (idx === 4 && recipeUnlocked) {
                     const portal = document.createElement('div');
                     portal.className = 'portal-block';
-                    portal.innerText = '🟡';
                     cell.appendChild(portal);
                 } else if (gridState[idx] !== null) {
                     const img = document.createElement('img');
