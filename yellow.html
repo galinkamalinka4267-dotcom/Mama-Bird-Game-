@@ -32,28 +32,9 @@
         }
 
         .title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #ffcc00;
             text-shadow: 0 0 12px rgba(255, 204, 0, 0.6);
-            margin-bottom: 8px;
-        }
-
-        .back-btn {
-            background: #a855f7;
-            color: #fff;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
-            transition: transform 0.1s, background 0.2s;
-        }
-
-        .back-btn:hover {
-            background: #9333ea;
-            transform: scale(1.05);
         }
 
         /* Игровой контейнер */
@@ -74,7 +55,7 @@
             height: 100%;
         }
 
-        /* Экран Game Over и старта */
+        /* Экран Game Over */
         .overlay {
             position: absolute;
             top: 0;
@@ -99,7 +80,7 @@
         }
 
         .overlay p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin-bottom: 20px;
             color: #eee;
         }
@@ -130,18 +111,15 @@
 
     <div class="header">
         <h1 class="title">🟡 Параллельное Измерение</h1>
-        <button class="back-btn" onclick="window.location.href='index.html'">
-            🟣 Вернуться в Фиолетовый Мир
-        </button>
     </div>
 
     <div id="game-container">
         <canvas id="gameCanvas" width="360" height="540"></canvas>
 
-        <div id="ui-overlay" class="overlay">
-            <h2 id="overlay-title">Flappy Bird</h2>
-            <p id="overlay-msg">Нажми на экран или Пробел, чтобы лететь!</p>
-            <button class="start-btn" id="start-btn" onclick="startGame()">Играть</button>
+        <div id="ui-overlay" class="overlay hidden">
+            <h2 id="overlay-title">Игра Окончена!</h2>
+            <p id="overlay-msg">Твой счёт: 0</p>
+            <button class="start-btn" id="start-btn" onclick="startGame()">Играть Снова</button>
         </div>
     </div>
 
@@ -152,7 +130,6 @@
         const overlay = document.getElementById('ui-overlay');
         const overlayTitle = document.getElementById('overlay-title');
         const overlayMsg = document.getElementById('overlay-msg');
-        const startBtn = document.getElementById('start-btn');
 
         // Загрузка текстур
         const bgImage = new Image();
@@ -178,14 +155,14 @@
         let pipes = [];
         let frameCount = 0;
         let score = 0;
-        let gameState = 'START'; // 'START', 'PLAYING', 'GAMEOVER'
-        const pipeGap = 140; // Просвет между верхней и нижней трубой
+        let gameState = 'PLAYING'; // Игра начинается сразу!
+        const pipeGap = 190; // Увеличенное расстояние между трубами (было 140)
         const pipeSpeed = 2.2;
 
         function jump() {
             if (gameState === 'PLAYING') {
                 bird.velocity = bird.lift;
-            } else if (gameState === 'START' || gameState === 'GAMEOVER') {
+            } else if (gameState === 'GAMEOVER') {
                 startGame();
             }
         }
@@ -214,13 +191,12 @@
             gameState = 'GAMEOVER';
             overlayTitle.textContent = 'Игра Окончена!';
             overlayMsg.innerHTML = `Твой счёт: <b>${score}</b>`;
-            startBtn.textContent = 'Попробовать снова';
             overlay.classList.remove('hidden');
         }
 
         function spawnPipe() {
-            const minTop = 50;
-            const maxTop = canvas.height - pipeGap - 100;
+            const minTop = 40;
+            const maxTop = canvas.height - pipeGap - 80;
             const topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
 
             pipes.push({
@@ -245,7 +221,7 @@
 
             // Создание труб
             frameCount++;
-            if (frameCount % 100 === 0) {
+            if (frameCount % 105 === 0) {
                 spawnPipe();
             }
 
