@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Параллельное Измерение</title>
+    <title>Параллельное Измерение — Flappy Bird</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,34 +14,37 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #11111d;
+            background: #0f0f1a;
             color: #fff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 10px;
+            overflow: hidden;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            z-index: 10;
         }
 
         .title {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             color: #ffcc00;
-            text-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
-            margin-bottom: 10px;
+            text-shadow: 0 0 12px rgba(255, 204, 0, 0.6);
+            margin-bottom: 8px;
         }
 
         .back-btn {
             background: #a855f7;
             color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 18px;
             border-radius: 12px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
@@ -50,74 +53,76 @@
 
         .back-btn:hover {
             background: #9333ea;
-            transform: scale(1.03);
+            transform: scale(1.05);
         }
 
-        .main-container {
+        /* Игровой контейнер */
+        #game-container {
+            position: relative;
+            width: 360px;
+            height: 540px;
+            border: 3px solid #ffcc00;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(255, 204, 0, 0.3);
+            background: url('level27.png') center/cover no-repeat #111;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Экран Game Over и старта */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .score-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #ffcc00;
-            border-radius: 16px;
-            padding: 15px 30px;
             text-align: center;
-            margin-bottom: 25px;
-            box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
-            width: 100%;
+            padding: 20px;
+            backdrop-filter: blur(3px);
         }
 
-        .score-value {
-            font-size: 2.5rem;
-            font-weight: bold;
+        .overlay h2 {
+            font-size: 2.2rem;
             color: #ffcc00;
-            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
         }
 
-        .click-area {
-            position: relative;
-            margin-bottom: 30px;
+        .overlay p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #eee;
         }
 
-        /* Зеркалим птицу по горизонтали через scaleX(-1) */
-        .bird-img {
-            width: 220px;
-            height: 220px;
-            object-fit: contain;
+        .start-btn {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.08s ease;
-            filter: drop-shadow(0 0 15px rgba(255, 204, 0, 0.3));
-            transform: scaleX(-1); 
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
+            transition: transform 0.1s;
         }
 
-        .bird-img:active {
-            transform: scaleX(-1) scale(0.92);
+        .start-btn:hover {
+            transform: scale(1.05);
         }
 
-        .click-pop {
-            position: absolute;
-            color: #ffcc00;
-            font-weight: bold;
-            font-size: 1.8rem;
-            pointer-events: none;
-            animation: floatUp 0.8s ease-out forwards;
-            text-shadow: 0 0 8px rgba(0,0,0,0.8);
-        }
-
-        @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-60px) scale(1.2);
-            }
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -130,50 +135,223 @@
         </button>
     </div>
 
-    <div class="main-container">
-        <div class="score-box">
-            <div class="score-value" id="score">0</div>
-        </div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="360" height="540"></canvas>
 
-        <div class="click-area" id="click-area">
-            <img src="level7.png" alt="Bird" class="bird-img" id="bird">
+        <div id="ui-overlay" class="overlay">
+            <h2 id="overlay-title">Flappy Bird</h2>
+            <p id="overlay-msg">Нажми на экран или Пробел, чтобы лететь!</p>
+            <button class="start-btn" id="start-btn" onclick="startGame()">Играть</button>
         </div>
     </div>
 
     <script>
-        // Сохранение полностью отключено: при перезагрузке счёт всегда 0
-        let score = 0;
-        const scoreEl = document.getElementById('score');
-        const bird = document.getElementById('bird');
-        const clickArea = document.getElementById('click-area');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        function updateScoreDisplay() {
-            scoreEl.textContent = score;
+        const overlay = document.getElementById('ui-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMsg = document.getElementById('overlay-msg');
+        const startBtn = document.getElementById('start-btn');
+
+        // Загрузка текстур
+        const bgImage = new Image();
+        bgImage.src = 'level27.png';
+
+        const birdImage = new Image();
+        birdImage.src = 'level7.png';
+
+        const pipeImage = new Image();
+        pipeImage.src = 'level28.png';
+
+        // Игровые переменные
+        let bird = {
+            x: 60,
+            y: 240,
+            width: 42,
+            height: 42,
+            gravity: 0.35,
+            lift: -6.8,
+            velocity: 0
+        };
+
+        let pipes = [];
+        let frameCount = 0;
+        let score = 0;
+        let gameState = 'START'; // 'START', 'PLAYING', 'GAMEOVER'
+        const pipeGap = 140; // Просвет между верхней и нижней трубой
+        const pipeSpeed = 2.2;
+
+        function jump() {
+            if (gameState === 'PLAYING') {
+                bird.velocity = bird.lift;
+            } else if (gameState === 'START' || gameState === 'GAMEOVER') {
+                startGame();
+            }
         }
 
-        bird.addEventListener('click', (e) => {
-            score++;
-            updateScoreDisplay();
-
-            const pop = document.createElement('div');
-            pop.className = 'click-pop';
-            pop.textContent = '+1';
-            
-            const rect = clickArea.getBoundingClientRect();
-            const x = e.clientX - rect.left - 15;
-            const y = e.clientY - rect.top - 20;
-
-            pop.style.left = `${x}px`;
-            pop.style.top = `${y}px`;
-
-            clickArea.appendChild(pop);
-
-            setTimeout(() => {
-                pop.remove();
-            }, 800);
+        // Управление (клик, тап, пробел, стрелка вверх)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            }
         });
 
-        updateScoreDisplay();
+        canvas.addEventListener('click', jump);
+
+        function startGame() {
+            bird.y = 240;
+            bird.velocity = 0;
+            pipes = [];
+            score = 0;
+            frameCount = 0;
+            gameState = 'PLAYING';
+            overlay.classList.add('hidden');
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            overlayTitle.textContent = 'Игра Окончена!';
+            overlayMsg.innerHTML = `Твой счёт: <b>${score}</b>`;
+            startBtn.textContent = 'Попробовать снова';
+            overlay.classList.remove('hidden');
+        }
+
+        function spawnPipe() {
+            const minTop = 50;
+            const maxTop = canvas.height - pipeGap - 100;
+            const topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
+
+            pipes.push({
+                x: canvas.width,
+                topHeight: topHeight,
+                bottomY: topHeight + pipeGap,
+                passed: false
+            });
+        }
+
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            // Физика птички
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            // Столкновение с полом или потолком
+            if (bird.y + bird.height >= canvas.height || bird.y <= 0) {
+                gameOver();
+            }
+
+            // Создание труб
+            frameCount++;
+            if (frameCount % 100 === 0) {
+                spawnPipe();
+            }
+
+            // Движение и проверка труб
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                let p = pipes[i];
+                p.x -= pipeSpeed;
+
+                // Проверка столкновения
+                const birdRight = bird.x + bird.width;
+                const birdBottom = bird.y + bird.height;
+                const pipeRight = p.x + 55; // Ширина трубы = 55px
+
+                if (birdRight > p.x && bird.x < pipeRight) {
+                    if (bird.y < p.topHeight || birdBottom > p.bottomY) {
+                        gameOver();
+                    }
+                }
+
+                // Зачисление очков
+                if (!p.passed && p.x + 55 < bird.x) {
+                    p.passed = true;
+                    score++;
+                }
+
+                // Удаление ушедших за экран труб
+                if (p.x < -60) {
+                    pipes.splice(i, 1);
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Отрисовка фона (level27.png)
+            if (bgImage.complete && bgImage.naturalWidth !== 0) {
+                ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 2. Отрисовка труб (level28.png)
+            pipes.forEach(p => {
+                const pipeWidth = 55;
+
+                // Верхняя труба (перевернутая)
+                ctx.save();
+                ctx.translate(p.x + pipeWidth / 2, p.topHeight / 2);
+                ctx.scale(1, -1);
+                if (pipeImage.complete && pipeImage.naturalWidth !== 0) {
+                    ctx.drawImage(pipeImage, -pipeWidth / 2, -p.topHeight / 2, pipeWidth, p.topHeight);
+                } else {
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.fillRect(-pipeWidth / 2, -p.topHeight / 2, pipeWidth, p.topHeight);
+                }
+                ctx.restore();
+
+                // Нижняя труба
+                const bottomHeight = canvas.height - p.bottomY;
+                if (pipeImage.complete && pipeImage.naturalWidth !== 0) {
+                    ctx.drawImage(pipeImage, p.x, p.bottomY, pipeWidth, bottomHeight);
+                } else {
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.fillRect(p.x, p.bottomY, pipeWidth, bottomHeight);
+                }
+            });
+
+            // 3. Отрисовка птички (level7.png — отзеркаленная по горизонтали)
+            ctx.save();
+            ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
+            
+            // Наклон птички при падении/взлёте
+            let angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, bird.velocity * 0.08));
+            ctx.rotate(angle);
+
+            // Зеркалирование по горизонтали
+            ctx.scale(-1, 1);
+
+            if (birdImage.complete && birdImage.naturalWidth !== 0) {
+                ctx.drawImage(birdImage, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
+            } else {
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillRect(-bird.width / 2, -bird.height / 2, bird.width, bird.height);
+            }
+            ctx.restore();
+
+            // 4. Отрисовка текущего счёта во время игры
+            if (gameState === 'PLAYING') {
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = 'bold 36px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.lineWidth = 3;
+                ctx.strokeText(score, canvas.width / 2, 50);
+                ctx.fillText(score, canvas.width / 2, 50);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
     </script>
 </body>
 </html>
