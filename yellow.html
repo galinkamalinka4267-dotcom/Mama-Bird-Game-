@@ -14,8 +14,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f1a;
-            color: #fff;
+            background: #ffea75;
+            color: #1a1a1a;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -29,12 +29,29 @@
             text-align: center;
             margin-bottom: 15px;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
 
         .title {
-            font-size: 2rem;
-            color: #ffcc00;
-            text-shadow: 0 0 12px rgba(255, 204, 0, 0.6);
+            font-size: 2.2rem;
+            color: #a855f7;
+            text-shadow: 0 0 12px rgba(168, 85, 247, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-weight: 800;
+        }
+
+        .version-badge {
+            background: rgba(255, 255, 255, 0.85);
+            border: 2px solid #a855f7;
+            color: #6b21a8;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(168, 85, 247, 0.25);
+            backdrop-filter: blur(4px);
         }
 
         /* Игровой контейнер */
@@ -42,10 +59,10 @@
             position: relative;
             width: 360px;
             height: 540px;
-            border: 3px solid #ffcc00;
-            border-radius: 16px;
+            border: 4px solid #a855f7;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.3);
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.35);
             background: url('level27.png') center/cover no-repeat #111;
         }
 
@@ -62,14 +79,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 20px;
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(4px);
         }
 
         .overlay h2 {
@@ -82,23 +99,24 @@
         .overlay p {
             font-size: 1.2rem;
             margin-bottom: 20px;
-            color: #eee;
+            color: #fff;
         }
 
         .start-btn {
-            background: #ffcc00;
-            color: #000;
+            background: #a855f7;
+            color: #fff;
             border: none;
             padding: 12px 28px;
             font-size: 1.2rem;
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
-            transition: transform 0.1s;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+            transition: transform 0.1s, background 0.2s;
         }
 
         .start-btn:hover {
+            background: #9333ea;
             transform: scale(1.05);
         }
 
@@ -110,7 +128,8 @@
 <body>
 
     <div class="header">
-        <h1 class="title">🟡 Параллельное Измерение</h1>
+        <h1 class="title">Параллельное Измерение</h1>
+        <div class="version-badge">Версия: 1.3</div>
     </div>
 
     <div id="game-container">
@@ -155,8 +174,8 @@
         let pipes = [];
         let frameCount = 0;
         let score = 0;
-        let gameState = 'PLAYING'; // Игра начинается сразу!
-        const pipeGap = 190; // Увеличенное расстояние между трубами (было 140)
+        let gameState = 'PLAYING';
+        const pipeGap = 190;
         const pipeSpeed = 2.2;
 
         function jump() {
@@ -233,7 +252,7 @@
                 // Проверка столкновения
                 const birdRight = bird.x + bird.width;
                 const birdBottom = bird.y + bird.height;
-                const pipeRight = p.x + 55; // Ширина трубы = 55px
+                const pipeRight = p.x + 55;
 
                 if (birdRight > p.x && bird.x < pipeRight) {
                     if (bird.y < p.topHeight || birdBottom > p.bottomY) {
@@ -295,11 +314,9 @@
             ctx.save();
             ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
             
-            // Наклон птички при падении/взлёте
             let angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, bird.velocity * 0.08));
             ctx.rotate(angle);
 
-            // Зеркалирование по горизонтали
             ctx.scale(-1, 1);
 
             if (birdImage.complete && birdImage.naturalWidth !== 0) {
