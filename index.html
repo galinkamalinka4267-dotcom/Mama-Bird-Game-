@@ -365,14 +365,15 @@
         let upgradeStep = 0;
         let inventory = {};
 
+        // ОБНОВЛЕННЫЕ ПОРОГИ СМЕНЫ КАРТИНОК
         const levels = [
-            { threshold: 0, img: 'level1.png' },
-            { threshold: 10, img: 'level2.png' },
-            { threshold: 30, img: 'level3.png' },
-            { threshold: 40, img: 'level4.png' },
-            { threshold: 55, img: 'level5.png' },
-            { threshold: 67, img: 'level6.png' },
-            { threshold: 74, img: 'level7.png' }
+            { threshold: 0, img: 'level1.png' },    // Начальная
+            { threshold: 10, img: 'level2.png' },   // После 10 кликов
+            { threshold: 30, img: 'level3.png' },   // После 30 кликов
+            { threshold: 70, img: 'level4.png' },   // После 70 кликов
+            { threshold: 100, img: 'level5.png' },  // После 100 кликов
+            { threshold: 150, img: 'level6.png' },  // После 150 кликов
+            { threshold: 200, img: 'level7.png' }   // После 200 кликов
         ];
 
         const upgradesData = [
@@ -505,7 +506,7 @@
             msgInput.value = "";
         }
 
-        // Слушатель новых сообщений
+        // Слушатель последних 30 сообщений
         chatRef.limitToLast(30).on('value', (snapshot) => {
             const messagesDiv = document.getElementById('chat-messages');
             messagesDiv.innerHTML = '';
