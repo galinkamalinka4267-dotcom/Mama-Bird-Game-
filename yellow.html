@@ -72,12 +72,6 @@
             width: 100%;
         }
 
-        .score-box h2 {
-            font-size: 1.2rem;
-            color: #ccc;
-            margin-bottom: 5px;
-        }
-
         .score-value {
             font-size: 2.5rem;
             font-weight: bold;
@@ -90,6 +84,7 @@
             margin-bottom: 30px;
         }
 
+        /* Зеркалим птицу по горизонтали через scaleX(-1) */
         .bird-img {
             width: 220px;
             height: 220px;
@@ -97,13 +92,13 @@
             cursor: pointer;
             transition: transform 0.08s ease;
             filter: drop-shadow(0 0 15px rgba(255, 204, 0, 0.3));
+            transform: scaleX(-1); 
         }
 
         .bird-img:active {
-            transform: scale(0.92);
+            transform: scaleX(-1) scale(0.92);
         }
 
-        /* Анимация всплывающих цифр клика */
         .click-pop {
             position: absolute;
             color: #ffcc00;
@@ -137,7 +132,6 @@
 
     <div class="main-container">
         <div class="score-box">
-            <h2>Очки в измерении</h2>
             <div class="score-value" id="score">0</div>
         </div>
 
@@ -147,7 +141,8 @@
     </div>
 
     <script>
-        let score = parseInt(localStorage.getItem('parallel_score')) || 0;
+        // Сохранение полностью отключено: при перезагрузке счёт всегда 0
+        let score = 0;
         const scoreEl = document.getElementById('score');
         const bird = document.getElementById('bird');
         const clickArea = document.getElementById('click-area');
@@ -158,10 +153,8 @@
 
         bird.addEventListener('click', (e) => {
             score++;
-            localStorage.setItem('parallel_score', score);
             updateScoreDisplay();
 
-            // Создание эффекта клика (+1)
             const pop = document.createElement('div');
             pop.className = 'click-pop';
             pop.textContent = '+1';
