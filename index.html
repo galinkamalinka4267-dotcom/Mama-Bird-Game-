@@ -579,7 +579,7 @@
         let inventory = {};
         let gridState = [null, null, null, null, null, null, null, null, null];
 
-        // Массив достижений (без эмодзи)
+        // Массив достижений
         const achievementsData = [
             { id: 1, req: 67, text: "не шути про это", unlocked: false },
             { id: 2, req: 1488, text: "отсылочка", unlocked: false },
@@ -611,11 +611,50 @@
             26: "potuzhno"
         };
 
+        // === ЛОГИКА СОХРАНЕНИЯ И ЗАГРУЗКИ (localStorage) ===
+        function saveProgress() {
+            const dataToSave = {
+                clicks,
+                totalClicksEarned,
+                clickPower,
+                upgradeStep,
+                inventory,
+                gridState,
+                achievements: achievementsData.map(a => ({ id: a.id, unlocked: a.unlocked }))
+            };
+            localStorage.setItem('mamaBirdGameSave', JSON.stringify(dataToSave));
+        }
+
+        function loadProgress() {
+            const savedData = localStorage.getItem('mamaBirdGameSave');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    clicks = parsed.clicks || 0;
+                    totalClicksEarned = parsed.totalClicksEarned || 0;
+                    clickPower = parsed.clickPower || 1;
+                    upgradeStep = parsed.upgradeStep || 0;
+                    inventory = parsed.inventory || {};
+                    if (parsed.gridState) gridState = parsed.gridState;
+
+                    if (parsed.achievements) {
+                        parsed.achievements.forEach(savedAch => {
+                            const ach = achievementsData.find(a => a.id === savedAch.id);
+                            if (ach) ach.unlocked = savedAch.unlocked;
+                        });
+                    }
+                } catch (e) {
+                    console.error("Ошибка загрузки данных", e);
+                }
+            }
+        }
+
         function handleClick() {
             clicks += clickPower;
             totalClicksEarned += clickPower;
             checkAchievements();
             updateUI();
+            saveProgress();
         }
 
         function checkAchievements() {
@@ -691,6 +730,7 @@
                 upgradeStep++;
                 updateUI();
                 renderUpgrades();
+                saveProgress();
             }
         }
 
@@ -703,7 +743,6 @@
             }
 
             clicks -= 10;
-            updateUI();
 
             const outcomes = [5, 11, 12, 14, 15, 16, 17, 18, 19, 20, 26];
             const rolled = outcomes[Math.floor(Math.random() * outcomes.length)];
@@ -713,6 +752,9 @@
             document.getElementById('casino-display').style.backgroundImage = `url('level${rolled}.png')`;
             resultDiv.style.color = "#4caf50";
             resultDiv.innerText = `Выпал: ${charNames[rolled] || 'Персонаж ' + rolled}!`;
+
+            updateUI();
+            saveProgress();
         }
 
         function renderInventory() {
@@ -767,6 +809,7 @@
                 inventory[itemId]--;
                 gridState[index] = itemId;
                 renderInventory();
+                saveProgress();
             }
         }
 
@@ -774,12 +817,14 @@
             const item = gridState[index];
             if (item !== null) {
                 if (index === 4 && isSecretRecipeActive()) {
+                    saveProgress(); // Автоматически сохраняем состояние перед переходом в портал
                     window.location.href = 'yellow.html';
                     return;
                 }
                 inventory[item] = (inventory[item] || 0) + 1;
                 gridState[index] = null;
                 renderInventory();
+                saveProgress();
             }
         }
 
@@ -858,6 +903,10 @@
         function toggleFaq(element) {
             element.classList.toggle('open');
         }
+
+        // Инициализация при старте
+        loadProgress();
+        updateUI();
     </script>
 </body>
 </html>
