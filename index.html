@@ -594,14 +594,17 @@
         let totalClicksEarned = 0;
         let clickPower = 1;
         let upgradeStep = 0;
+        let casinoSpins = 0;
         let inventory = {};
         let gridState = [null, null, null, null, null, null, null, null, null];
 
         // Массив достижений
         const achievementsData = [
-            { id: 1, req: 67, text: "не шути про это", unlocked: false },
-            { id: 2, req: 1488, text: "отсылочка", unlocked: false },
-            { id: 3, req: 10000, text: "вечный почёт", unlocked: false }
+            { id: 1, reqText: "Нужно 67 кликов", text: "не шути про это", unlocked: false },
+            { id: 2, reqText: "Нужно 1488 кликов", text: "отсылочка", unlocked: false },
+            { id: 3, reqText: "Нужно 10000 кликов", text: "вечный почёт", unlocked: false },
+            { id: 4, reqText: "Войти в секретный портал", text: "вошли и вышли", unlocked: false },
+            { id: 5, reqText: "Сделать 50 депов в казино", text: "обурмалдился", unlocked: false }
         ];
 
         const levels = [
@@ -653,6 +656,7 @@
                 totalClicksEarned,
                 clickPower,
                 upgradeStep,
+                casinoSpins,
                 inventory,
                 gridState,
                 achievements: achievementsData.map(a => ({ id: a.id, unlocked: a.unlocked }))
@@ -669,6 +673,7 @@
                     totalClicksEarned = parsed.totalClicksEarned || 0;
                     clickPower = parsed.clickPower || 1;
                     upgradeStep = parsed.upgradeStep || 0;
+                    casinoSpins = parsed.casinoSpins || 0;
                     inventory = parsed.inventory || {};
                     if (parsed.gridState) gridState = parsed.gridState;
 
@@ -692,12 +697,16 @@
             saveProgress();
         }
 
+        function unlockAchievement(id) {
+            const ach = achievementsData.find(a => a.id === id);
+            if (ach) ach.unlocked = true;
+        }
+
         function checkAchievements() {
-            achievementsData.forEach(ach => {
-                if (!ach.unlocked && totalClicksEarned >= ach.req) {
-                    ach.unlocked = true;
-                }
-            });
+            if (totalClicksEarned >= 67) unlockAchievement(1);
+            if (totalClicksEarned >= 1488) unlockAchievement(2);
+            if (totalClicksEarned >= 10000) unlockAchievement(3);
+            if (casinoSpins >= 50) unlockAchievement(5);
         }
 
         function updateUI() {
@@ -728,7 +737,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="achievement-title">${ach.unlocked ? ach.text : 'Заблокировано'}</div>
-                        <div class="achievement-desc">${ach.unlocked ? `Разблокировано на ${ach.req} кликах!` : `Нужно кликов: ${ach.req}`}</div>
+                        <div class="achievement-desc">${ach.unlocked ? 'Разблокировано!' : ach.reqText}</div>
                     </div>
                 `;
                 container.appendChild(card);
@@ -778,6 +787,7 @@
             }
 
             clicks -= 10;
+            casinoSpins++;
 
             const outcomes = [5, 11, 12, 14, 15, 16, 17, 18, 19, 20, 26];
             const rolled = outcomes[Math.floor(Math.random() * outcomes.length)];
@@ -788,6 +798,7 @@
             resultDiv.style.color = "#4caf50";
             resultDiv.innerText = `Выпал: ${charNames[rolled] || 'Персонаж ' + rolled}!`;
 
+            checkAchievements();
             updateUI();
             saveProgress();
         }
@@ -852,7 +863,8 @@
             const item = gridState[index];
             if (item !== null) {
                 if (index === 4 && isSecretRecipeActive()) {
-                    saveProgress(); // Автоматически сохраняем состояние перед переходом в портал
+                    unlockAchievement(4); // Открываем ачивку "вошли и вышли"
+                    saveProgress();
                     window.location.href = 'yellow.html';
                     return;
                 }
