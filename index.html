@@ -65,8 +65,8 @@
         }
 
         .icon-btn {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 12px;
             border: 2px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.1);
@@ -239,7 +239,6 @@
             border-radius: 2px;
         }
 
-        /* Жёлтый квадрат портала */
         .portal-block {
             width: 100%;
             height: 100%;
@@ -253,6 +252,44 @@
         @keyframes pulsePortal {
             0% { transform: scale(0.93); box-shadow: 0 0 8px #ffea00; }
             100% { transform: scale(1.03); box-shadow: 0 0 18px #ffff00; }
+        }
+
+        /* === СТИЛИ ДОСТИЖЕНИЙ === */
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            opacity: 1;
+            background: rgba(255, 215, 0, 0.12);
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+
+        .achievement-icon {
+            font-size: 1.8rem;
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #ffd700;
+        }
+
+        .achievement-desc {
+            font-size: 0.85rem;
+            color: #ddd;
+            margin-top: 3px;
         }
 
         /* === СТИЛИ ОНЛАЙН-ЧАТА === */
@@ -402,9 +439,11 @@
             <div class="top-bar">
                 <div class="icon-btn" style="background-image: url('level21.png');" onclick="openScreen('secret-screen')"></div>
                 <div style="display: flex; gap: 5px;">
-                    <div class="icon-btn" style="background-image: url('level25.png');" onclick="openScreen('upgrade-screen')"></div>
-                    <div class="icon-btn" style="background-image: url('level23.png');" onclick="openScreen('inventory-screen')"></div>
-                    <div class="icon-btn" style="background-image: url('level9.png');" onclick="openScreen('casino-screen')"></div>
+                    <!-- Кнопка Достижений (level29) рядом с кнопкой Улучшений (level25) -->
+                    <div class="icon-btn" style="background-image: url('level29.png');" onclick="openScreen('achievements-screen')" title="Достижения"></div>
+                    <div class="icon-btn" style="background-image: url('level25.png');" onclick="openScreen('upgrade-screen')" title="Улучшения"></div>
+                    <div class="icon-btn" style="background-image: url('level23.png');" onclick="openScreen('inventory-screen')" title="Инвентарь"></div>
+                    <div class="icon-btn" style="background-image: url('level9.png');" onclick="openScreen('casino-screen')" title="Казино"></div>
                 </div>
             </div>
 
@@ -453,7 +492,16 @@
 
         </div>
 
-        <!-- === 2. МЕНЮ УЛУЧШЕНИЙ === -->
+        <!-- === 2. МЕНЮ ДОСТИЖЕНИЙ (LEVEL 29) === -->
+        <div id="achievements-screen" class="screen">
+            <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
+            <h2>Достижения</h2>
+            <div class="sub-text">Кликай и открывай уникальные ачивки!</div>
+
+            <div id="achievements-list"></div>
+        </div>
+
+        <!-- === 3. МЕНЮ УЛУЧШЕНИЙ === -->
         <div id="upgrade-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Улучшения клика</h2>
@@ -461,7 +509,7 @@
             <div id="upgrade-container"></div>
         </div>
 
-        <!-- === 3. МЕНЮ ИНВЕНТАРЯ И СЕТКА === -->
+        <!-- === 4. МЕНЮ ИНВЕНТАРЯ И СЕТКА === -->
         <div id="inventory-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Инвентарь персонажей</h2>
@@ -491,7 +539,7 @@
             </div>
         </div>
 
-        <!-- === 4. КАЗИНО === -->
+        <!-- === 5. КАЗИНО === -->
         <div id="casino-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Бурмалда-Казино</h2>
@@ -503,7 +551,7 @@
             <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
         </div>
 
-        <!-- === 5. ДОНАТ === -->
+        <!-- === 6. ДОНАТ === -->
         <div id="secret-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Донат</h2>
@@ -530,10 +578,18 @@
 
         // === ИГРОВАЯ ЛОГИКА ===
         let clicks = 0;
+        let totalClicksEarned = 0; // Для подсчёта всех накопленных кликов
         let clickPower = 1;
         let upgradeStep = 0;
         let inventory = {};
         let gridState = [null, null, null, null, null, null, null, null, null];
+
+        // Массив достижений
+        const achievementsData = [
+            { id: 1, req: 67, text: "не шути про это", icon: "🤫", unlocked: false },
+            { id: 2, req: 1488, text: "отсылочка", icon: "🎯", unlocked: false },
+            { id: 3, req: 10000, text: "вечный почёт", icon: "👑", unlocked: false }
+        ];
 
         const levels = [
             { threshold: 0, img: 'level1.png' },
@@ -562,7 +618,17 @@
 
         function handleClick() {
             clicks += clickPower;
+            totalClicksEarned += clickPower;
+            checkAchievements();
             updateUI();
+        }
+
+        function checkAchievements() {
+            achievementsData.forEach(ach => {
+                if (!ach.unlocked && totalClicksEarned >= ach.req) {
+                    ach.unlocked = true;
+                }
+            });
         }
 
         function updateUI() {
@@ -578,8 +644,27 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
 
+            if (screenId === 'achievements-screen') renderAchievements();
             if (screenId === 'upgrade-screen') renderUpgrades();
             if (screenId === 'inventory-screen') renderInventory();
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achievements-list');
+            container.innerHTML = '';
+
+            achievementsData.forEach(ach => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${ach.unlocked ? 'unlocked' : ''}`;
+                card.innerHTML = `
+                    <div class="achievement-icon">${ach.unlocked ? ach.icon : '🔒'}</div>
+                    <div>
+                        <div class="achievement-title">${ach.unlocked ? ach.text : 'Заблокировано'}</div>
+                        <div class="achievement-desc">${ach.unlocked ? `Разблокировано на ${ach.req} кликах!` : `Нужно кликов: ${ach.req}`}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
 
         function renderUpgrades() {
