@@ -276,10 +276,6 @@
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
         }
 
-        .achievement-icon {
-            font-size: 1.8rem;
-        }
-
         .achievement-title {
             font-weight: bold;
             font-size: 1rem;
@@ -430,7 +426,7 @@
 <body>
 
     <h1>МАМА ПТИЦА: КЛИКЕР</h1>
-    <div class="version-badge">Версия 1.3: новое измерение!</div>
+    <div class="version-badge">Версия 1.4: достижения и ачивки!</div>
 
     <div class="game-container">
         
@@ -439,7 +435,6 @@
             <div class="top-bar">
                 <div class="icon-btn" style="background-image: url('level21.png');" onclick="openScreen('secret-screen')"></div>
                 <div style="display: flex; gap: 5px;">
-                    <!-- Кнопка Достижений (level29) рядом с кнопкой Улучшений (level25) -->
                     <div class="icon-btn" style="background-image: url('level29.png');" onclick="openScreen('achievements-screen')" title="Достижения"></div>
                     <div class="icon-btn" style="background-image: url('level25.png');" onclick="openScreen('upgrade-screen')" title="Улучшения"></div>
                     <div class="icon-btn" style="background-image: url('level23.png');" onclick="openScreen('inventory-screen')" title="Инвентарь"></div>
@@ -471,11 +466,11 @@
             <div class="faq-container">
                 <div class="faq-item" onclick="toggleFaq(this)">
                     <div class="faq-header">
-                        О Версии 1.3.
+                        О Версии 1.4.
                         <span class="faq-arrow">▼</span>
                     </div>
                     <div class="faq-body">
-                        в версии 1.3 были проведены изменения общего баланса кликов, а также добавлено новое измерение! Положите в сетку крафта по краям 8 Панков и вложите в середину жёлтого директора - проводника в измерение. Вам откроется портал! Исследуйте новый мир с удовольствием!
+                        в версии 1.4 был несущественно изменён баланс прокачки а также добавлена масса достижений! Да, как вы и просили, бета-тестеры
                     </div>
                 </div>
 
@@ -578,17 +573,17 @@
 
         // === ИГРОВАЯ ЛОГИКА ===
         let clicks = 0;
-        let totalClicksEarned = 0; // Для подсчёта всех накопленных кликов
+        let totalClicksEarned = 0;
         let clickPower = 1;
         let upgradeStep = 0;
         let inventory = {};
         let gridState = [null, null, null, null, null, null, null, null, null];
 
-        // Массив достижений
+        // Массив достижений (без эмодзи)
         const achievementsData = [
-            { id: 1, req: 67, text: "не шути про это", icon: "🤫", unlocked: false },
-            { id: 2, req: 1488, text: "отсылочка", icon: "🎯", unlocked: false },
-            { id: 3, req: 10000, text: "вечный почёт", icon: "👑", unlocked: false }
+            { id: 1, req: 67, text: "не шути про это", unlocked: false },
+            { id: 2, req: 1488, text: "отсылочка", unlocked: false },
+            { id: 3, req: 10000, text: "вечный почёт", unlocked: false }
         ];
 
         const levels = [
@@ -657,7 +652,6 @@
                 const card = document.createElement('div');
                 card.className = `achievement-card ${ach.unlocked ? 'unlocked' : ''}`;
                 card.innerHTML = `
-                    <div class="achievement-icon">${ach.unlocked ? ach.icon : '🔒'}</div>
                     <div>
                         <div class="achievement-title">${ach.unlocked ? ach.text : 'Заблокировано'}</div>
                         <div class="achievement-desc">${ach.unlocked ? `Разблокировано на ${ach.req} кликах!` : `Нужно кликов: ${ach.req}`}</div>
