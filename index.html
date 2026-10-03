@@ -74,10 +74,24 @@
             transition: transform 0.1s;
             background-size: cover;
             background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
         }
 
         .icon-btn:active {
             transform: scale(0.92);
+        }
+
+        .wipe-btn {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.6);
+            color: #ff4d4d;
+        }
+
+        .wipe-btn:hover {
+            background: rgba(244, 67, 54, 0.4);
         }
 
         .score-box {
@@ -433,7 +447,11 @@
         <!-- === 1. ГЛАВНЫЙ ЭКРАН КЛИКЕРА === -->
         <div id="main-screen" class="screen active">
             <div class="top-bar">
-                <div class="icon-btn" style="background-image: url('level21.png');" onclick="openScreen('secret-screen')"></div>
+                <div class="icon-btn" style="background-image: url('level21.png');" onclick="openScreen('secret-screen')" title="Донат"></div>
+                
+                <!-- КНОПКА ПОЛНОЙ ОЧИСТКИ ДАННЫХ -->
+                <div class="icon-btn wipe-btn" onclick="wipeAllData()" title="Анонимность: Стереть все данные">🗑️</div>
+
                 <div style="display: flex; gap: 5px;">
                     <div class="icon-btn" style="background-image: url('level29.png');" onclick="openScreen('achievements-screen')" title="Достижения"></div>
                     <div class="icon-btn" style="background-image: url('level25.png');" onclick="openScreen('upgrade-screen')" title="Улучшения"></div>
@@ -480,7 +498,7 @@
                         <span class="faq-arrow">▼</span>
                     </div>
                     <div class="faq-body">
-                        Наша игра придерживается максимальной анонимности. Именно из-за этого при выходе из сайта теряются очки, а все ники в чате временны. Ни байта информации с сервера не попадёт в чужие руки!
+                        Наша игра придерживается максимальной анонимности. Нажатие на иконку урны мгновенно уничтожит все данные и следы игры без возможности восстановления!
                     </div>
                 </div>
             </div>
@@ -610,6 +628,23 @@
             18: "Капитан лицея", 19: "Потужно", 20: "Золотая Панкова",
             26: "potuzhno"
         };
+
+        // === ЛОГИКА ОЧИСТКИ ВСЕХ ДАННЫХ (АНОНИМНОСТЬ) ===
+        function wipeAllData() {
+            if (confirm("Вы уверены, что хотите полностью стереть все данные? Это очистит сохранённый прогресс и перезапустит игру.")) {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Очистка всех доступных куки
+                document.cookie.split(";").forEach((c) => {
+                    document.cookie = c
+                        .replace(/^ +/, "")
+                        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+
+                location.reload();
+            }
+        }
 
         // === ЛОГИКА СОХРАНЕНИЯ И ЗАГРУЗКИ (localStorage) ===
         function saveProgress() {
