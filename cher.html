@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Cher</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #1f6feb;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  #score {
+    color: #fff;
+    font-size: 32px;
+    font-weight: 700;
+  }
+  #best {
+    font-size: 16px;
+    font-weight: 400;
+    opacity: .8;
+    margin-left: 16px;
+  }
+  canvas {
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 8 / 3;
+    background: #1f6feb;
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div id="score">Очки: 0<span id="best"></span></div>
+  <canvas id="game" width="800" height="300"></canvas>
+
+<script>
+(function () {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const W = canvas.width, H = canvas.height;
+
+  // ---------- Текстуры ----------
+  function load(src) {
+    const img = new Image();
+    img.src = src;
+    img.ready = false;
+    img.onload = function () { img.ready = true; };
+    return img;
+  }
+  // Спрайт: вырезает зелёный фон и обрезает пустые поля по краям.
+  // Если картинка уже с прозрачностью, ничего страшного, просто обрежется.
+  function loadSprite(src) {
+    const s = { ready: false, naturalWidth: 0, naturalHeight: 0, canvas: null };
+    const img = new Image();
+    img.onload = function () {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const cx = c.getContext('2d');
+      cx.drawImage(img, 0, 0);
+      let out = c;
+      try {
+        const d = cx.getImageData(0, 0, w, h);
+        const p = d.data;
+        let minX = w, minY = h, maxX = -1, maxY = -1;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            const r = p[i], g = p[i + 1], b = p[i + 2];
+            const green = g - Math.max(r, b);
+            if (green > 70) {
+              p[i + 3] = 0;                       // чистый зелёный фон
+            } else if (green > 25) {
+              p[i + 3] = Math.round(p[i + 3] * (70 - green) / 45); // зелёная кайма
+              p[i + 1] = Math.max(r, b);
+            }
+            if (p[i + 3] > 20) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        cx.putImageData(d, 0, 0);
+        if (maxX >= minX && maxY >= minY) {
+          const cw = maxX - minX + 1, ch = maxY - minY + 1;
+          out = document.createElement('canvas');
+          out.width = cw; out.height = ch;
+          out.getContext('2d').drawImage(c, minX, minY, cw, ch, 0, 0, cw, ch);
+        }
+      } catch (e) {
+        out = c; // например, при открытии файла напрямую с диска
+      }
+      s.canvas = out;
+      s.naturalWidth = out.width;
+      s.naturalHeight = out.height;
+      s.ready = true;
+    };
+    img.src = src;
+    return s;
+  }
+
+  const imgPlayer = loadSprite('level31.png');
+  const imgObstacle = loadSprite('level28.png');
+  const imgBg = load('level32.png');
+
+  // ---------- Настройки ----------
+  const GROUND = H - 30;     // линия земли
+  const GRAVITY = 0.65;
+  const JUMP_V = -13;
+  const PLAYER_H = 80;
+  const OBSTACLE_H = 65;
+  const START_SPEED = 6;
+  const MAX_SPEED = 14;
+
+  // ---------- Состояние ----------
+  let player, obstacles, speed, score, best, over, overAt, nextSpawn, last;
+
+  try { best = parseInt(localStorage.getItem('cher_best') || '0', 10) || 0; }
+  catch (e) { best = 0; }
+
+  function sizeOf(img, h, fallbackW) {
+    if (img.ready && img.naturalHeight) return h * img.naturalWidth / img.naturalHeight;
+    return fallbackW;
+  }
+
+  function reset() {
+    player = { x: 70, y: 0, vy: 0, h: PLAYER_H, w: 0, onGround: true };
+    player.y = GROUND - player.h;
+    obstacles = [];
+    speed = START_SPEED;
+    score = 0;
+    over = false;
+    nextSpawn = 70;
+    updateScore();
+  }
+
+  function updateScore() {
+    scoreEl.firstChild.nodeValue = 'Очки: ' + score;
+    bestEl.textContent = best > 0 ? 'Рекорд: ' + best : '';
+  }
+
+  function jump() {
+    if (over) {
+      if (performance.now() - overAt > 300) reset();
+      return;
+    }
+    if (player.onGround) {
+      player.vy = JUMP_V;
+      player.onGround = false;
+    }
+  }
+
+  // ---------- Управление ----------
+  window.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      if (!e.repeat) jump();
+    }
+  });
+  window.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    jump();
+  });
+
+  // ---------- Логика ----------
+  function spawn() {
+    const h = OBSTACLE_H;
+    obstacles.push({ x: W + 20, h: h, w: sizeOf(imgObstacle, h, 30), passed: false });
+  }
+
+  function hit(a, b) {
+    // чуть уменьшаем хитбоксы, чтобы столкновения были честными
+    const pad = 6;
+    return a.x + pad < b.x + b.w - pad &&
+           a.x + a.w - pad > b.x + pad &&
+           a.y + pad < GROUND - 0 &&
+           a.y + a.h - pad > GROUND - b.h + pad;
+  }
+
+  function update(step) {
+    player.w = sizeOf(imgPlayer, player.h, 40);
+
+    // прыжок / гравитация
+    player.vy += GRAVITY * step;
+    player.y += player.vy * step;
+    if (player.y >= GROUND - player.h) {
+      player.y = GROUND - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+
+    // препятствия
+    nextSpawn -= speed * step;
+    if (nextSpawn <= 0) {
+      spawn();
+      nextSpawn = 260 + Math.random() * 300 + speed * 12;
+    }
+
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const o = obstacles[i];
+      o.x -= speed * step;
+
+      if (hit(player, o)) {
+        over = true;
+        overAt = performance.now();
+        if (score > best) {
+          best = score;
+          try { localStorage.setItem('cher_best', String(best)); } catch (e) {}
+        }
+        updateScore();
+        return;
+      }
+
+      // перепрыгнули: препятствие осталось позади игрока
+      if (!o.passed && o.x + o.w < player.x) {
+        o.passed = true;
+        score++;
+        updateScore();
+      }
+
+      if (o.x + o.w < -20) obstacles.splice(i, 1);
+    }
+
+    if (speed < MAX_SPEED) speed += 0.0015 * step;
+  }
+
+  // ---------- Отрисовка ----------
+  function drawBg() {
+    ctx.fillStyle = '#1f6feb';
+    ctx.fillRect(0, 0, W, H);
+    if (imgBg.ready && imgBg.naturalWidth) {
+      // «cover»: фон заполняет всё поле без искажений
+      const s = Math.max(W / imgBg.naturalWidth, H / imgBg.naturalHeight);
+      const w = imgBg.naturalWidth * s, h = imgBg.naturalHeight * s;
+      ctx.drawImage(imgBg, (W - w) / 2, (H - h) / 2, w, h);
+    }
+  }
+
+  function drawSprite(img, x, y, w, h, color) {
+    if (img.ready) {
+      ctx.drawImage(img.canvas, x, y, w, h);
+    } else {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    }
+  }
+
+  function draw() {
+    drawBg();
+
+    // земля
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillRect(0, GROUND, W, 3);
+
+    obstacles.forEach(function (o) {
+      drawSprite(imgObstacle, o.x, GROUND - o.h, o.w, o.h, '#e63946');
+    });
+    drawSprite(imgPlayer, player.x, player.y, player.w || 40, player.h, '#ffd166');
+
+    if (over) {
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = '700 36px system-ui, sans-serif';
+      ctx.fillText('Игра окончена', W / 2, H / 2 - 6);
+      ctx.font = '400 18px system-ui, sans-serif';
+      ctx.fillText('Нажми или тапни, чтобы начать заново', W / 2, H / 2 + 28);
+    }
+  }
+
+  // ---------- Цикл ----------
+  function loop(t) {
+    if (!last) last = t;
+    const step = Math.min((t - last) / 16.667, 3); // 1 = 60 FPS
+    last = t;
+    if (!over) update(step);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  reset();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
