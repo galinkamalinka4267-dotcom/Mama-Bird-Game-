@@ -253,6 +253,7 @@
             border-radius: 2px;
         }
 
+        /* Жёлтый портал */
         .portal-block {
             width: 100%;
             height: 100%;
@@ -263,9 +264,25 @@
             animation: pulsePortal 1.2s infinite alternate;
         }
 
+        /* Синий портал */
+        .portal-blue-block {
+            width: 100%;
+            height: 100%;
+            background: #00d8ff;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px #00d8ff;
+            cursor: pointer;
+            animation: pulseBluePortal 1.2s infinite alternate;
+        }
+
         @keyframes pulsePortal {
             0% { transform: scale(0.93); box-shadow: 0 0 8px #ffea00; }
             100% { transform: scale(1.03); box-shadow: 0 0 18px #ffff00; }
+        }
+
+        @keyframes pulseBluePortal {
+            0% { transform: scale(0.93); box-shadow: 0 0 8px #00d8ff; }
+            100% { transform: scale(1.03); box-shadow: 0 0 18px #00ffff; }
         }
 
         /* === СТИЛИ ДОСТИЖЕНИЙ === */
@@ -501,6 +518,16 @@
                         Наша игра придерживается максимальной анонимности, именно поэтому существует кнопка очистки прогресса, а также все ники в чате временны. Ни байта информации не попадёт в чужие руки!
                     </div>
                 </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-header">
+                        Крафты
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-body">
+                        выставьте Панков как рамку и жёлтого директора посередине и вы попадете в параллельное измерение. Выставьте Наталью Леонидовну как рамку и посередине потужно и попадите в увлекательный мир
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -561,39 +588,7 @@
             <div id="casino-display" style="width:180px; height:180px; margin: 15px auto; background-size: cover; background-position: center; border-radius: 15px; background-image: url('level10.png');"></div>
             <div id="casino-result" style="font-weight: bold; margin: 10px 0; min-height: 24px;"></div>
 
-            <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
-        </div>
-
-        <!-- === 6. ДОНАТ === -->
-        <div id="secret-screen" class="screen">
-            <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
-            <h2>Донат</h2>
-            <img src="level22.png" style="width: 80%; border-radius: 15px; margin-top: 10px;" alt="Donate">
-        </div>
-
-    </div>
-
-    <script>
-        // === НАСТРОЙКИ FIREBASE ===
-        const firebaseConfig = {
-            apiKey: "AIzaSyCFk6vg8BXATLGH9nHebxZOPeYWP14YmqM",
-            authDomain: "mamabirdchat-b5764.firebaseapp.com",
-            databaseURL: "https://mamabirdchat-b5764-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "mamabirdchat-b5764",
-            storageBucket: "mamabirdchat-b5764.firebasestorage.app",
-            messagingSenderId: "8943077553",
-            appId: "1:8943077553:web:4b509cc971b0d94dbd3a90"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const chatRef = db.ref("chat_messages");
-
-        // === ИГРОВАЯ ЛОГИКА ===
-        let clicks = 0;
-        let totalClicksEarned = 0;
-        let clickPower = 1;
-        let upgradeStep = 0;
+               let upgradeStep = 0;
         let casinoSpins = 0;
         let inventory = {};
         let gridState = [null, null, null, null, null, null, null, null, null];
@@ -627,7 +622,7 @@
         const charNames = {
             5: "Панкова",
             11: "Прокопенко", 12: "Большая", 13: "Мега пальчики", 14: "Директор",
-            15: "Мамка птица", 16: "Голом лицея", 17: "Мама Птица",
+            15: "Мамка птица", 16: "Наталья Леонидовна", 17: "Мама Птица",
             18: "Капитан лицея", 19: "Потужно", 20: "Золотая Панкова",
             26: "potuzhno"
         };
@@ -862,11 +857,18 @@
         function removeGridItem(index) {
             const item = gridState[index];
             if (item !== null) {
-                if (index === 4 && isSecretRecipeActive()) {
-                    unlockAchievement(4); // Открываем ачивку "вошли и вышли"
-                    saveProgress();
-                    window.location.href = 'yellow.html';
-                    return;
+                if (index === 4) {
+                    if (isSecretRecipeActive()) {
+                        unlockAchievement(4); // Открываем ачивку "вошли и вышли"
+                        saveProgress();
+                        window.location.href = 'yellow.html';
+                        return;
+                    } else if (isBlueSecretRecipeActive()) {
+                        unlockAchievement(4);
+                        saveProgress();
+                        window.location.href = 'https://galinkamalinka4267-dotcom.github.io/Mama-Bird-Game-/cher.html';
+                        return;
+                    }
                 }
                 inventory[item] = (inventory[item] || 0) + 1;
                 gridState[index] = null;
@@ -875,6 +877,7 @@
             }
         }
 
+        // Рецепт 1: Рамка из level5 или level13, центр level26 -> Жёлтый портал (yellow.html)
         function isSecretRecipeActive() {
             const borderIndices = [0, 1, 2, 3, 5, 6, 7, 8];
             const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '5' || String(gridState[idx]) === '13');
@@ -882,16 +885,28 @@
             return borderCheck && centerCheck;
         }
 
+        // Рецепт 2: Рамка из level16, центр level19 -> Синий портал (cher.html)
+        function isBlueSecretRecipeActive() {
+            const borderIndices = [0, 1, 2, 3, 5, 6, 7, 8];
+            const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '16');
+            const centerCheck = String(gridState[4]) === '19';
+            return borderCheck && centerCheck;
+        }
+
         function renderGrid() {
             const cells = document.querySelectorAll('.craft-cell');
-            const recipeUnlocked = isSecretRecipeActive();
+            const yellowRecipeUnlocked = isSecretRecipeActive();
+            const blueRecipeUnlocked = isBlueSecretRecipeActive();
 
             cells.forEach((cell, idx) => {
                 cell.innerHTML = '';
                 
-                if (idx === 4 && recipeUnlocked) {
+                if (idx === 4 && yellowRecipeUnlocked) {
                     const portal = document.createElement('div');
                     portal.className = 'portal-block';
+                    cell.appendChild(portal);
+                } else if (idx === 4 && blueRecipeUnlocked) {
+                    const portal.className = 'portal-blue-block';
                     cell.appendChild(portal);
                 } else if (gridState[idx] !== null) {
                     const img = document.createElement('img');
