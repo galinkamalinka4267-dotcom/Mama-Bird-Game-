@@ -3,48 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Cher</title>
+<title>Мама Птица: Прыжок</title>
 <style>
+  :root {
+    --bg-top: #1a1240;
+    --bg-bottom: #3a2a72;
+    --accent: #ff2d95;
+    --accent2: #7b5cff;
+    --gold: #ffd60a;
+  }
   html, body {
     margin: 0;
-    height: 100%;
-    background: #1f6feb;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100%;
+    background: linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+    background-attachment: fixed;
+    font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
   }
   body {
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
+    padding: 16px;
+    box-sizing: border-box;
   }
   #score {
-    color: #fff;
-    font-size: 32px;
+    color: var(--gold);
+    font-size: 38px;
     font-weight: 700;
+    text-align: center;
+    text-shadow: 0 0 18px rgba(255, 214, 10, .35);
   }
   #best {
+    display: block;
     font-size: 16px;
     font-weight: 400;
-    opacity: .8;
-    margin-left: 16px;
+    color: rgba(255, 255, 255, .65);
+    text-shadow: none;
+    margin-top: 2px;
+    min-height: 20px;
+  }
+  .frame {
+    width: 100%;
+    max-width: 640px;
+    padding: 2px;
+    box-sizing: border-box;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 28px rgba(255, 45, 149, .35), 0 0 60px rgba(123, 92, 255, .25);
   }
   canvas {
-    width: 100%;
-    max-width: 800px;
-    aspect-ratio: 8 / 3;
-    background: #1f6feb;
     display: block;
+    width: 100%;
+    aspect-ratio: 600 / 340;
+    border-radius: 20px;
+    background: #1f6feb;
+  }
+  .hint {
+    color: rgba(255, 255, 255, .6);
+    font-size: 16px;
+    text-align: center;
   }
 </style>
 </head>
 <body>
   <div id="score">Очки: 0<span id="best"></span></div>
-  <canvas id="game" width="800" height="300"></canvas>
+  <div class="frame"><canvas id="game" width="600" height="340"></canvas></div>
+  <div class="hint">Тапни по экрану, чтобы прыгнуть</div>
 
 <script>
 (function () {
@@ -62,8 +94,8 @@
     img.onload = function () { img.ready = true; };
     return img;
   }
+
   // Спрайт: вырезает зелёный фон и обрезает пустые поля по краям.
-  // Если картинка уже с прозрачностью, ничего страшного, просто обрежется.
   function loadSprite(src) {
     const s = { ready: false, naturalWidth: 0, naturalHeight: 0, canvas: null };
     const img = new Image();
@@ -84,9 +116,9 @@
             const r = p[i], g = p[i + 1], b = p[i + 2];
             const green = g - Math.max(r, b);
             if (green > 70) {
-              p[i + 3] = 0;                       // чистый зелёный фон
+              p[i + 3] = 0;
             } else if (green > 25) {
-              p[i + 3] = Math.round(p[i + 3] * (70 - green) / 45); // зелёная кайма
+              p[i + 3] = Math.round(p[i + 3] * (70 - green) / 45);
               p[i + 1] = Math.max(r, b);
             }
             if (p[i + 3] > 20) {
@@ -105,7 +137,7 @@
           out.getContext('2d').drawImage(c, minX, minY, cw, ch, 0, 0, cw, ch);
         }
       } catch (e) {
-        out = c; // например, при открытии файла напрямую с диска
+        out = c;
       }
       s.canvas = out;
       s.naturalWidth = out.width;
@@ -121,13 +153,13 @@
   const imgBg = load('level32.png');
 
   // ---------- Настройки ----------
-  const GROUND = H - 30;     // линия земли
-  const GRAVITY = 0.65;
-  const JUMP_V = -13;
-  const PLAYER_H = 80;
-  const OBSTACLE_H = 65;
+  const GROUND = H - 34;     // линия земли
+  const GRAVITY = 0.7;
+  const JUMP_V = -14.5;
+  const PLAYER_H = 130;      // высота женщины с кроликом
+  const OBSTACLE_H = 100;    // высота бутылки
   const START_SPEED = 6;
-  const MAX_SPEED = 14;
+  const MAX_SPEED = 13;
 
   // ---------- Состояние ----------
   let player, obstacles, speed, score, best, over, overAt, nextSpawn, last;
@@ -141,13 +173,13 @@
   }
 
   function reset() {
-    player = { x: 70, y: 0, vy: 0, h: PLAYER_H, w: 0, onGround: true };
+    player = { x: 60, y: 0, vy: 0, h: PLAYER_H, w: 0, onGround: true };
     player.y = GROUND - player.h;
     obstacles = [];
     speed = START_SPEED;
     score = 0;
     over = false;
-    nextSpawn = 70;
+    nextSpawn = 80;
     updateScore();
   }
 
@@ -182,22 +214,19 @@
   // ---------- Логика ----------
   function spawn() {
     const h = OBSTACLE_H;
-    obstacles.push({ x: W + 20, h: h, w: sizeOf(imgObstacle, h, 30), passed: false });
+    obstacles.push({ x: W + 20, h: h, w: sizeOf(imgObstacle, h, 56), passed: false });
   }
 
   function hit(a, b) {
-    // чуть уменьшаем хитбоксы, чтобы столкновения были честными
-    const pad = 6;
-    return a.x + pad < b.x + b.w - pad &&
-           a.x + a.w - pad > b.x + pad &&
-           a.y + pad < GROUND - 0 &&
-           a.y + a.h - pad > GROUND - b.h + pad;
+    const padX = 14, padY = 10; // чуть уменьшаем хитбоксы, чтобы столкновения были честными
+    return a.x + padX < b.x + b.w - padX &&
+           a.x + a.w - padX > b.x + padX &&
+           a.y + a.h - padY > GROUND - b.h + padY;
   }
 
   function update(step) {
-    player.w = sizeOf(imgPlayer, player.h, 40);
+    player.w = sizeOf(imgPlayer, player.h, 120);
 
-    // прыжок / гравитация
     player.vy += GRAVITY * step;
     player.y += player.vy * step;
     if (player.y >= GROUND - player.h) {
@@ -206,11 +235,10 @@
       player.onGround = true;
     }
 
-    // препятствия
     nextSpawn -= speed * step;
     if (nextSpawn <= 0) {
       spawn();
-      nextSpawn = 260 + Math.random() * 300 + speed * 12;
+      nextSpawn = 300 + Math.random() * 300 + speed * 14;
     }
 
     for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -228,7 +256,7 @@
         return;
       }
 
-      // перепрыгнули: препятствие осталось позади игрока
+      // перепрыгнули: бутылка осталась позади игрока
       if (!o.passed && o.x + o.w < player.x) {
         o.passed = true;
         score++;
@@ -246,7 +274,6 @@
     ctx.fillStyle = '#1f6feb';
     ctx.fillRect(0, 0, W, H);
     if (imgBg.ready && imgBg.naturalWidth) {
-      // «cover»: фон заполняет всё поле без искажений
       const s = Math.max(W / imgBg.naturalWidth, H / imgBg.naturalHeight);
       const w = imgBg.naturalWidth * s, h = imgBg.naturalHeight * s;
       ctx.drawImage(imgBg, (W - w) / 2, (H - h) / 2, w, h);
@@ -265,24 +292,23 @@
   function draw() {
     drawBg();
 
-    // земля
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.fillRect(0, GROUND, W, 3);
 
     obstacles.forEach(function (o) {
       drawSprite(imgObstacle, o.x, GROUND - o.h, o.w, o.h, '#e63946');
     });
-    drawSprite(imgPlayer, player.x, player.y, player.w || 40, player.h, '#ffd166');
+    drawSprite(imgPlayer, player.x, player.y, player.w || 120, player.h, '#ffd166');
 
     if (over) {
-      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
-      ctx.font = '700 36px system-ui, sans-serif';
+      ctx.font = '700 46px Roboto, system-ui, sans-serif';
       ctx.fillText('Игра окончена', W / 2, H / 2 - 6);
-      ctx.font = '400 18px system-ui, sans-serif';
-      ctx.fillText('Нажми или тапни, чтобы начать заново', W / 2, H / 2 + 28);
+      ctx.font = '400 24px Roboto, system-ui, sans-serif';
+      ctx.fillText('Тапни, чтобы начать заново', W / 2, H / 2 + 36);
     }
   }
 
