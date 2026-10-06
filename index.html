@@ -5,94 +5,453 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>МАМА ПТИЦА: КЛИКЕР — Веб-версия</title>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (Подключение базы данных для чата) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #ffffff; margin: 0; padding: 10px;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            color: #ffffff;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
-        h1 { font-size: 2.2rem; margin: 10px 0 5px 0; text-shadow: 0 0 15px #ff007f; text-align: center; }
-        .version-badge { background: #ff007f; color: white; font-weight: bold; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 15px; }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 10px 0 5px 0;
+            text-shadow: 0 0 15px #ff007f;
+            text-align: center;
+        }
+
+        .version-badge {
+            background: #ff007f;
+            color: white;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
         .game-container {
-            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px; padding: 15px; width: 100%; max-width: 480px;
-            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 15px;
+            width: 100%;
+            max-width: 480px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
         }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
         .icon-btn {
-            width: 45px; height: 45px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1); cursor: pointer; transition: transform 0.1s;
-            background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
         }
-        .icon-btn:active { transform: scale(0.92); }
-        .wipe-btn { background: rgba(244, 67, 54, 0.2); border-color: rgba(244, 67, 54, 0.6); color: #ff4d4d; }
-        .score-box { font-size: 1.8rem; font-weight: bold; color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); margin: 10px 0; }
-        .sub-text { font-size: 0.95rem; color: #aaa; margin-bottom: 10px; }
+
+        .icon-btn:active {
+            transform: scale(0.92);
+        }
+
+        .wipe-btn {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.6);
+            color: #ff4d4d;
+        }
+
+        .wipe-btn:hover {
+            background: rgba(244, 67, 54, 0.4);
+        }
+
+        .score-box {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            margin: 10px 0;
+        }
+
+        .sub-text {
+            font-size: 0.95rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
         .click-target {
-            width: 250px; height: 250px; margin: 10px auto; border-radius: 20px;
-            background-size: cover; background-position: center; cursor: pointer;
-            transition: transform 0.08s ease; box-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
+            width: 250px;
+            height: 250px;
+            margin: 10px auto;
+            border-radius: 20px;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: transform 0.08s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
         }
-        .click-target:active { transform: scale(0.95); }
-        .screen { display: none; }
-        .screen.active { display: block; }
-        .back-btn { background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        .upgrade-card { background: rgba(255,255,255,0.08); border-radius: 15px; padding: 15px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; }
-        .upgrade-card img { width: 100px; height: 100px; border-radius: 10px; margin-bottom: 10px; }
-        .buy-btn { background: linear-gradient(45deg, #4caf50, #2e7d32); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
-        .buy-btn:disabled { background: #555; cursor: not-allowed; }
-        .inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 220px; overflow-y: auto; padding: 5px; margin-bottom: 15px; }
-        .inv-item { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 8px; font-size: 0.8rem; cursor: pointer; }
-        .inv-item img { width: 55px; height: 55px; border-radius: 8px; pointer-events: none; }
-        .craft-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.15); }
-        .craft-title { font-size: 1.1rem; font-weight: bold; color: #ffcc00; margin-bottom: 5px; }
-        .craft-grid-container { display: flex; justify-content: center; margin-bottom: 10px; }
-        .craft-grid { display: grid; grid-template-columns: repeat(3, 65px); grid-template-rows: repeat(3, 65px); gap: 4px; background: #555; padding: 4px; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-        .craft-cell { width: 65px; height: 65px; background: #777; border: 2px solid #333; box-shadow: inset 2px 2px 0px rgba(255,255,255,0.2), inset -2px -2px 0px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
-        .craft-cell img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
-        .portal-block { width: 100%; height: 100%; background: #ffea00; border: 2px solid #fff; box-shadow: 0 0 12px #ffea00; cursor: pointer; animation: pulsePortal 1.2s infinite alternate; }
-        .portal-blue-block { width: 100%; height: 100%; background: #00d8ff; border: 2px solid #fff; box-shadow: 0 0 12px #00d8ff; cursor: pointer; animation: pulseBluePortal 1.2s infinite alternate; }
-        @keyframes pulsePortal { 0% { transform: scale(0.93); box-shadow: 0 0 8px #ffea00; } 100% { transform: scale(1.03); box-shadow: 0 0 18px #ffff00; } }
-        @keyframes pulseBluePortal { 0% { transform: scale(0.93); box-shadow: 0 0 8px #00d8ff; } 100% { transform: scale(1.03); box-shadow: 0 0 18px #00ffff; } }
-        .achievement-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: left; display: flex; align-items: center; gap: 12px; opacity: 0.5; transition: all 0.3s ease; }
-        .achievement-card.unlocked { opacity: 1; background: rgba(255, 215, 0, 0.12); border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
-        .achievement-title { font-weight: bold; font-size: 1rem; color: #ffd700; }
-        .achievement-desc { font-size: 0.85rem; color: #ddd; margin-top: 3px; }
-        .chat-container { margin-top: 20px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 15px; padding: 12px; text-align: left; }
-        .chat-title { font-size: 1.1rem; font-weight: bold; color: #00d8ff; margin-bottom: 8px; text-align: center; }
-        .chat-messages { height: 160px; overflow-y: auto; background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 8px; margin-bottom: 10px; font-size: 0.88rem; display: flex; flex-direction: column; gap: 6px; }
-        .chat-msg { word-break: break-word; }
-        .chat-msg .author { color: #ff007f; font-weight: bold; }
-        .chat-inputs { display: flex; flex-direction: column; gap: 8px; }
-        .chat-row { display: flex; gap: 6px; }
-        .chat-input { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: white; padding: 8px; font-size: 0.85rem; outline: none; }
-        .chat-nick-input { width: 100%; }
-        .chat-msg-input { flex-grow: 1; }
-        .chat-send-btn { background: #ff007f; border: none; color: white; font-weight: bold; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
-        .faq-container { margin-top: 15px; text-align: left; }
-        .faq-item { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
-        .faq-header { padding: 10px 12px; font-weight: bold; font-size: 0.95rem; color: #ffd700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease; font-size: 0.85rem; color: #ddd; line-height: 1.4; padding: 0 12px; background: rgba(0, 0, 0, 0.2); }
-        .faq-item.open .faq-body { max-height: 200px; padding: 10px 12px; }
-        .faq-arrow { transition: transform 0.3s ease; font-size: 0.8rem; }
-        .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+        .click-target:active {
+            transform: scale(0.95);
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .back-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .upgrade-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .upgrade-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, #4caf50, #2e7d32);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .buy-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 5px;
+            margin-bottom: 15px;
+        }
+
+        .inv-item {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .inv-item img {
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        /* === СТИЛИ ИНТЕРАКТИВНОЙ СЕТКИ 3х3 === */
+        .craft-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .craft-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffcc00;
+            margin-bottom: 5px;
+        }
+
+        .craft-grid-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .craft-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 65px);
+            grid-template-rows: repeat(3, 65px);
+            gap: 4px;
+            background: #555;
+            padding: 4px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .craft-cell {
+            width: 65px;
+            height: 65px;
+            background: #777777;
+            border: 2px solid #333333;
+            box-shadow: inset 2px 2px 0px rgba(255,255,255,0.2), inset -2px -2px 0px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .craft-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .portal-block {
+            width: 100%;
+            height: 100%;
+            background: #ffea00;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px #ffea00;
+            cursor: pointer;
+            animation: pulsePortal 1.2s infinite alternate;
+        }
+
+        @keyframes pulsePortal {
+            0% { transform: scale(0.93); box-shadow: 0 0 8px #ffea00; }
+            100% { transform: scale(1.03); box-shadow: 0 0 18px #ffff00; }
+        }
+
+        /* === СТИЛИ ДОСТИЖЕНИЙ === */
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            opacity: 1;
+            background: rgba(255, 215, 0, 0.12);
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #ffd700;
+        }
+
+        .achievement-desc {
+            font-size: 0.85rem;
+            color: #ddd;
+            margin-top: 3px;
+        }
+
+        /* === СТИЛИ ОНЛАЙН-ЧАТА === */
+        .chat-container {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .chat-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #00d8ff;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .chat-messages {
+            height: 160px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 0.88rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-msg {
+            word-break: break-word;
+        }
+
+        .chat-msg .author {
+            color: #ff007f;
+            font-weight: bold;
+        }
+
+        .chat-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .chat-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            padding: 8px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .chat-nick-input {
+            width: 100%;
+        }
+
+        .chat-msg-input {
+            flex-grow: 1;
+        }
+
+        .chat-send-btn {
+            background: #ff007f;
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* === СТИЛИ СВОРАЧИВАЕМЫХ ВОПРОСОВ (FAQ) === */
+        .faq-container {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .faq-header {
+            padding: 10px 12px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #ffd700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .faq-header:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .faq-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+            font-size: 0.85rem;
+            color: #ddd;
+            line-height: 1.4;
+            padding: 0 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .faq-item.open .faq-body {
+            max-height: 200px;
+            padding: 10px 12px;
+        }
+
+        .faq-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body>
+
     <h1>МАМА ПТИЦА: КЛИКЕР</h1>
     <div class="version-badge">Версия 1.4: достижения и ачивки!</div>
 
     <div class="game-container">
+        
+        <!-- === 1. ГЛАВНЫЙ ЭКРАН КЛИКЕРА === -->
         <div id="main-screen" class="screen active">
             <div class="top-bar">
                 <div class="icon-btn" style="background-image: url('level21.png');" onclick="openScreen('secret-screen')" title="Донат"></div>
-                <div class="icon-btn wipe-btn" onclick="wipeAllData()" title="Стереть данные">🗑️</div>
+                
+                <!-- КНОПКА ПОЛНОЙ ОЧИСТКИ ДАННЫХ -->
+                <div class="icon-btn wipe-btn" onclick="wipeAllData()" title="Анонимность: Стереть все данные">🗑️</div>
+
                 <div style="display: flex; gap: 5px;">
                     <div class="icon-btn" style="background-image: url('level29.png');" onclick="openScreen('achievements-screen')" title="Достижения"></div>
                     <div class="icon-btn" style="background-image: url('level25.png');" onclick="openScreen('upgrade-screen')" title="Улучшения"></div>
@@ -105,11 +464,13 @@
             <div class="click-target" id="click-target" style="background-image: url('level1.png');" onclick="handleClick()"></div>
             <div class="sub-text">Тапай по маме птице, чтобы набивать очки!</div>
 
+            <!-- === ОНЛАЙН-ЧАТ ПОД КЛИКЕРОМ === -->
             <div class="chat-container">
                 <div class="chat-title">Чат игроков</div>
                 <div class="chat-messages" id="chat-messages">
                     <div style="color: #888; text-align: center;">Загрузка сообщений...</div>
                 </div>
+                
                 <div class="chat-inputs">
                     <input type="text" id="chat-nick" class="chat-input chat-nick-input" placeholder="Введи временный ник..." maxlength="15">
                     <div class="chat-row">
@@ -119,29 +480,41 @@
                 </div>
             </div>
 
+            <!-- === СВОРАЧИВАЕМЫЙ БЛОК ВОПРОСОВ (FAQ) === -->
             <div class="faq-container">
                 <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-header">О Версии 1.4.<span class="faq-arrow">▼</span></div>
-                    <div class="faq-body">в версии 1.4 был несущественно изменён баланс прокачки а также добавлена масса достижений! Да, как вы и просили, бета-тестеры</div>
+                    <div class="faq-header">
+                        О Версии 1.4.
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-body">
+                        в версии 1.4 был несущественно изменён баланс прокачки а также добавлена масса достижений! Да, как вы и просили, бета-тестеры
+                    </div>
                 </div>
+
                 <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-header">Про анонимность.<span class="faq-arrow">▼</span></div>
-                    <div class="faq-body">Наша игра придерживается максимальной анонимности, именно поэтому существует кнопка очистки прогресса, а также все ники в чате временны. Ни байта информации не попадёт в чужие руки!</div>
-                </div>
-                <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-header">Крафты<span class="faq-arrow">▼</span></div>
-                    <div class="faq-body">выставьте Панков как рамку и жёлтого директора посередине и вы попадете в параллельное измерение. Выставьте Наталью Леонидовну как рамку и посередине потужно и попадите в увлекательный мир</div>
+                    <div class="faq-header">
+                        Про анонимность.
+                        <span class="faq-arrow">▼</span>
+                    </div>
+                    <div class="faq-body">
+                        Наша игра придерживается максимальной анонимности, именно поэтому существует кнопка очистки прогресса, а также все ники в чате временны. Ни байта информации не попадёт в чужие руки!
+                    </div>
                 </div>
             </div>
+
         </div>
 
+        <!-- === 2. МЕНЮ ДОСТИЖЕНИЙ (LEVEL 29) === -->
         <div id="achievements-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Достижения</h2>
             <div class="sub-text">Кликай и открывай уникальные ачивки!</div>
+
             <div id="achievements-list"></div>
         </div>
 
+        <!-- === 3. МЕНЮ УЛУЧШЕНИЙ === -->
         <div id="upgrade-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Улучшения клика</h2>
@@ -149,48 +522,59 @@
             <div id="upgrade-container"></div>
         </div>
 
+        <!-- === 4. МЕНЮ ИНВЕНТАРЯ И СЕТКА === -->
         <div id="inventory-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Инвентарь персонажей</h2>
+            
             <div id="inventory-grid" class="inventory-grid">
                 <div class="sub-text" style="grid-column: span 3;">У вас пока нет персонажей! Крутите казино.</div>
             </div>
+
+            <!-- === СЕТКА ИНВЕНТАРЯ 3х3 === -->
             <div class="craft-section">
                 <div class="craft-title">Крафт</div>
                 <div class="sub-text" style="font-size:0.8rem; margin-bottom:8px;">нажимайте на предмет, чтобы вставить его в сетку</div>
+                
                 <div class="craft-grid-container">
                     <div class="craft-grid" id="craft-grid">
-                        <div class="craft-cell" data-index="0" onclick="removeGridItem(0)"></div>
-                        <div class="craft-cell" data-index="1" onclick="removeGridItem(1)"></div>
-                        <div class="craft-cell" data-index="2" onclick="removeGridItem(2)"></div>
-                        <div class="craft-cell" data-index="3" onclick="removeGridItem(3)"></div>
-                        <div class="craft-cell" data-index="4" onclick="removeGridItem(4)"></div>
-                        <div class="craft-cell" data-index="5" onclick="removeGridItem(5)"></div>
-                        <div class="craft-cell" data-index="6" onclick="removeGridItem(6)"></div>
-                        <div class="craft-cell" data-index="7" onclick="removeGridItem(7)"></div>
-                        <div class="craft-cell" data-index="8" onclick="removeGridItem(8)"></div>
+                        <div class="craft-cell" data-index="0" onclick="removeGridItem(0)" ondragover="allowDrop(event)" ondrop="dropItem(event, 0)"></div>
+                        <div class="craft-cell" data-index="1" onclick="removeGridItem(1)" ondragover="allowDrop(event)" ondrop="dropItem(event, 1)"></div>
+                        <div class="craft-cell" data-index="2" onclick="removeGridItem(2)" ondragover="allowDrop(event)" ondrop="dropItem(event, 2)"></div>
+                        <div class="craft-cell" data-index="3" onclick="removeGridItem(3)" ondragover="allowDrop(event)" ondrop="dropItem(event, 3)"></div>
+                        <div class="craft-cell" data-index="4" onclick="removeGridItem(4)" ondragover="allowDrop(event)" ondrop="dropItem(event, 4)"></div>
+                        <div class="craft-cell" data-index="5" onclick="removeGridItem(5)" ondragover="allowDrop(event)" ondrop="dropItem(event, 5)"></div>
+                        <div class="craft-cell" data-index="6" onclick="removeGridItem(6)" ondragover="allowDrop(event)" ondrop="dropItem(event, 6)"></div>
+                        <div class="craft-cell" data-index="7" onclick="removeGridItem(7)" ondragover="allowDrop(event)" ondrop="dropItem(event, 7)"></div>
+                        <div class="craft-cell" data-index="8" onclick="removeGridItem(8)" ondragover="allowDrop(event)" ondrop="dropItem(event, 8)"></div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- === 5. КАЗИНО === -->
         <div id="casino-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Бурмалда-Казино</h2>
             <div class="sub-text">Испытай удачу за 10 кликов!</div>
+            
             <div id="casino-display" style="width:180px; height:180px; margin: 15px auto; background-size: cover; background-position: center; border-radius: 15px; background-image: url('level10.png');"></div>
             <div id="casino-result" style="font-weight: bold; margin: 10px 0; min-height: 24px;"></div>
+
             <button class="buy-btn" id="casino-spin-btn" onclick="playCasino()">Крутить (10 кликов)</button>
         </div>
 
+        <!-- === 6. ДОНАТ === -->
         <div id="secret-screen" class="screen">
             <button class="back-btn" onclick="openScreen('main-screen')">⬅ Вернуться к птице</button>
             <h2>Донат</h2>
             <img src="level22.png" style="width: 80%; border-radius: 15px; margin-top: 10px;" alt="Donate">
         </div>
+
     </div>
 
     <script>
+        // === НАСТРОЙКИ FIREBASE ===
         const firebaseConfig = {
             apiKey: "AIzaSyCFk6vg8BXATLGH9nHebxZOPeYWP14YmqM",
             authDomain: "mamabirdchat-b5764.firebaseapp.com",
@@ -205,6 +589,7 @@
         const db = firebase.database();
         const chatRef = db.ref("chat_messages");
 
+        // === ИГРОВАЯ ЛОГИКА ===
         let clicks = 0;
         let totalClicksEarned = 0;
         let clickPower = 1;
@@ -213,6 +598,7 @@
         let inventory = {};
         let gridState = [null, null, null, null, null, null, null, null, null];
 
+        // Массив достижений
         const achievementsData = [
             { id: 1, reqText: "Нужно 67 кликов", text: "не шути про это", unlocked: false },
             { id: 2, reqText: "Нужно 1488 кликов", text: "отсылочка", unlocked: false },
@@ -239,24 +625,40 @@
         ];
 
         const charNames = {
-            5: "Панкова", 11: "Прокопенко", 12: "Большая", 13: "Мега пальчики", 14: "Директор",
-            15: "Мамка птица", 16: "Наталья Леонидовна", 17: "Мама Птица", 18: "Капитан лицея",
-            19: "Потужно", 20: "Золотая Панкова", 26: "potuzhno"
+            5: "Панкова",
+            11: "Прокопенко", 12: "Большая", 13: "Мега пальчики", 14: "Директор",
+            15: "Мамка птица", 16: "Голом лицея", 17: "Мама Птица",
+            18: "Капитан лицея", 19: "Потужно", 20: "Золотая Панкова",
+            26: "potuzhno"
         };
 
+        // === ЛОГИКА ОЧИСТКИ ВСЕХ ДАННЫХ (АНОНИМНОСТЬ) ===
         function wipeAllData() {
-            if (confirm("Вы уверены, что хотите полностью стереть все данные?")) {
-                localStorage.clear(); sessionStorage.clear();
+            if (confirm("Вы уверены, что хотите полностью стереть все данные? Это очистит сохранённый прогресс и перезапустит игру.")) {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Очистка всех доступных куки
                 document.cookie.split(";").forEach((c) => {
-                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                    document.cookie = c
+                        .replace(/^ +/, "")
+                        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
                 });
+
                 location.reload();
             }
         }
 
+        // === ЛОГИКА СОХРАНЕНИЯ И ЗАГРУЗКИ (localStorage) ===
         function saveProgress() {
             const dataToSave = {
-                clicks, totalClicksEarned, clickPower, upgradeStep, casinoSpins, inventory, gridState,
+                clicks,
+                totalClicksEarned,
+                clickPower,
+                upgradeStep,
+                casinoSpins,
+                inventory,
+                gridState,
                 achievements: achievementsData.map(a => ({ id: a.id, unlocked: a.unlocked }))
             };
             localStorage.setItem('mamaBirdGameSave', JSON.stringify(dataToSave));
@@ -274,19 +676,25 @@
                     casinoSpins = parsed.casinoSpins || 0;
                     inventory = parsed.inventory || {};
                     if (parsed.gridState) gridState = parsed.gridState;
+
                     if (parsed.achievements) {
                         parsed.achievements.forEach(savedAch => {
                             const ach = achievementsData.find(a => a.id === savedAch.id);
                             if (ach) ach.unlocked = savedAch.unlocked;
                         });
                     }
-                } catch (e) { console.error("Ошибка загрузки данных", e); }
+                } catch (e) {
+                    console.error("Ошибка загрузки данных", e);
+                }
             }
         }
 
         function handleClick() {
-            clicks += clickPower; totalClicksEarned += clickPower;
-            checkAchievements(); updateUI(); saveProgress();
+            clicks += clickPower;
+            totalClicksEarned += clickPower;
+            checkAchievements();
+            updateUI();
+            saveProgress();
         }
 
         function unlockAchievement(id) {
@@ -301,4 +709,251 @@
             if (casinoSpins >= 50) unlockAchievement(5);
         }
 
-        function 
+        function updateUI() {
+            document.getElementById('score-display').innerText = `Кликов: ${clicks}`;
+            let currentImg = 'level1.png';
+            for (let l of levels) {
+                if (clicks >= l.threshold) currentImg = l.img;
+            }
+            document.getElementById('click-target').style.backgroundImage = `url('${currentImg}')`;
+        }
+
+        function openScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            if (screenId === 'achievements-screen') renderAchievements();
+            if (screenId === 'upgrade-screen') renderUpgrades();
+            if (screenId === 'inventory-screen') renderInventory();
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achievements-list');
+            container.innerHTML = '';
+
+            achievementsData.forEach(ach => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${ach.unlocked ? 'unlocked' : ''}`;
+                card.innerHTML = `
+                    <div>
+                        <div class="achievement-title">${ach.unlocked ? ach.text : 'Заблокировано'}</div>
+                        <div class="achievement-desc">${ach.unlocked ? 'Разблокировано!' : ach.reqText}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderUpgrades() {
+            document.getElementById('upgrade-status').innerText = `Текущая сила клика: +${clickPower}`;
+            const container = document.getElementById('upgrade-container');
+            container.innerHTML = '';
+
+            if (upgradeStep >= upgradesData.length) {
+                container.innerHTML = '<div style="color:#4caf50; font-weight:bold; margin-top:20px;">🎉 У вас теперь пальцы капитана лицея! Все улучшения куплены!</div>';
+                return;
+            }
+
+            const upg = upgradesData[upgradeStep];
+            const card = document.createElement('div');
+            card.className = 'upgrade-card';
+            card.innerHTML = `
+                <img src="level${upg.id}.png" alt="Upgrade">
+                <div style="font-weight:bold;">${upg.title}</div>
+                <div class="sub-text">(+${upg.power} к клику) — Цена: ${upg.cost} кликов</div>
+                <button class="buy-btn" ${clicks < upg.cost ? 'disabled' : ''} onclick="buyUpgrade()">Купить улучшение</button>
+            `;
+            container.appendChild(card);
+        }
+
+        function buyUpgrade() {
+            const upg = upgradesData[upgradeStep];
+            if (clicks >= upg.cost) {
+                clicks -= upg.cost;
+                clickPower = upg.power;
+                upgradeStep++;
+                updateUI();
+                renderUpgrades();
+                saveProgress();
+            }
+        }
+
+        function playCasino() {
+            const resultDiv = document.getElementById('casino-result');
+            if (clicks < 10) {
+                resultDiv.style.color = "#f44336";
+                resultDiv.innerText = "Не хватает кликов! Нужно минимум 10.";
+                return;
+            }
+
+            clicks -= 10;
+            casinoSpins++;
+
+            const outcomes = [5, 11, 12, 14, 15, 16, 17, 18, 19, 20, 26];
+            const rolled = outcomes[Math.floor(Math.random() * outcomes.length)];
+
+            inventory[rolled] = (inventory[rolled] || 0) + 1;
+
+            document.getElementById('casino-display').style.backgroundImage = `url('level${rolled}.png')`;
+            resultDiv.style.color = "#4caf50";
+            resultDiv.innerText = `Выпал: ${charNames[rolled] || 'Персонаж ' + rolled}!`;
+
+            checkAchievements();
+            updateUI();
+            saveProgress();
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+
+            let keys = Object.keys(inventory).filter(k => inventory[k] > 0);
+            if (keys.length === 0) {
+                grid.innerHTML = '<div class="sub-text" style="grid-column: span 3;">У вас пока нет персонажей! Крутите казино.</div>';
+            } else {
+                for (let k of keys) {
+                    const item = document.createElement('div');
+                    item.className = 'inv-item';
+                    item.draggable = true;
+                    item.ondragstart = (e) => e.dataTransfer.setData("text/plain", k);
+                    item.onclick = () => autoPlaceItem(k);
+                    item.innerHTML = `
+                        <img src="level${k}.png" alt="Char">
+                        <div style="font-weight:bold;">${charNames[k] || 'Персонаж'}</div>
+                        <div style="color:#00ffff;">Кол-во: ${inventory[k]}</div>
+                    `;
+                    grid.appendChild(item);
+                }
+            }
+
+            renderGrid();
+        }
+
+        // === ЛОГИКА СЕТКИ И ИНТЕРАКТИВА ===
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function dropItem(ev, index) {
+            ev.preventDefault();
+            const itemId = ev.dataTransfer.getData("text/plain");
+            if (itemId) placeItemInGrid(itemId, index);
+        }
+
+        function autoPlaceItem(itemId) {
+            const emptyIdx = gridState.findIndex(val => val === null);
+            if (emptyIdx !== -1) {
+                placeItemInGrid(itemId, emptyIdx);
+            }
+        }
+
+        function placeItemInGrid(itemId, index) {
+            if (inventory[itemId] > 0) {
+                if (gridState[index] !== null) {
+                    inventory[gridState[index]]++;
+                }
+                inventory[itemId]--;
+                gridState[index] = itemId;
+                renderInventory();
+                saveProgress();
+            }
+        }
+
+        function removeGridItem(index) {
+            const item = gridState[index];
+            if (item !== null) {
+                if (index === 4 && isSecretRecipeActive()) {
+                    unlockAchievement(4); // Открываем ачивку "вошли и вышли"
+                    saveProgress();
+                    window.location.href = 'yellow.html';
+                    return;
+                }
+                inventory[item] = (inventory[item] || 0) + 1;
+                gridState[index] = null;
+                renderInventory();
+                saveProgress();
+            }
+        }
+
+        function isSecretRecipeActive() {
+            const borderIndices = [0, 1, 2, 3, 5, 6, 7, 8];
+            const borderCheck = borderIndices.every(idx => String(gridState[idx]) === '5' || String(gridState[idx]) === '13');
+            const centerCheck = String(gridState[4]) === '26';
+            return borderCheck && centerCheck;
+        }
+
+        function renderGrid() {
+            const cells = document.querySelectorAll('.craft-cell');
+            const recipeUnlocked = isSecretRecipeActive();
+
+            cells.forEach((cell, idx) => {
+                cell.innerHTML = '';
+                
+                if (idx === 4 && recipeUnlocked) {
+                    const portal = document.createElement('div');
+                    portal.className = 'portal-block';
+                    cell.appendChild(portal);
+                } else if (gridState[idx] !== null) {
+                    const img = document.createElement('img');
+                    img.src = `level${gridState[idx]}.png`;
+                    cell.appendChild(img);
+                }
+            });
+        }
+
+        // === ЛОГИКА ОНЛАЙН-ЧАТА ===
+        function sendMessage() {
+            const nickInput = document.getElementById('chat-nick');
+            const msgInput = document.getElementById('chat-msg');
+
+            const nick = nickInput.value.trim() || "Аноним";
+            const text = msgInput.value.trim();
+
+            if (!text) return;
+
+            chatRef.push({
+                author: nick,
+                text: text,
+                timestamp: Date.now()
+            });
+
+            msgInput.value = "";
+        }
+
+        chatRef.limitToLast(30).on('value', (snapshot) => {
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML = '';
+
+            const data = snapshot.val();
+            if (!data) {
+                messagesDiv.innerHTML = '<div style="color: #888; text-align: center;">Чат пуст. Напиши что-нибудь!</div>';
+                return;
+            }
+
+            Object.values(data).forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'chat-msg';
+                div.innerHTML = `<span class="author">${escapeHtml(msg.author)}:</span> ${escapeHtml(msg.text)}`;
+                messagesDiv.appendChild(div);
+            });
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        function escapeHtml(string) {
+            return String(string).replace(/[&<>"']/g, function (s) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
+            });
+        }
+
+        // === ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ FAQ ===
+        function toggleFaq(element) {
+            element.classList.toggle('open');
+        }
+
+        // Инициализация при старте
+        loadProgress();
+        updateUI();
+    </script>
+</body>
+</html>
